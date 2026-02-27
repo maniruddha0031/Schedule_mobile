@@ -1,0 +1,3749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zip Schedules Mobile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+                background:#f1f5f9;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Mobile Frame */
+        .phone-container {
+    max-width: 430px;
+    height: 932px;
+    margin: 40px auto;
+    background:white;
+    border-radius: 42px;
+    overflow: hidden;
+    position: relative;
+display:flex;
+flex-direction:column;
+    isolation: isolate;
+	  /* 🔥 THIS CREATES THE PHONE BORDER */
+    box-shadow:
+        0 0 0 6px #000,        /* black rim */
+        0 25px 60px rgba(0,0,0,0.35),  /* drop shadow */
+        0 8px 20px rgba(0,0,0,0.2);
+}
+
+
+/* Dark overlay also clipped inside phone */
+        .status-bar {
+            height: 44px;
+            padding: 0 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .notch {
+            width: 120px;
+            height: 30px;
+             background:#000;
+			 box-shadow:0 4px 8px rgba(0,0,0,.4);
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            z-index: 100;
+        }
+        .app-header {
+            background-color: #1e293b;
+            color: white;
+            padding: 12px 20px;
+            z-index: 200;
+        }
+.bottom-nav {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding-bottom: 25px;
+    z-index: 9999; /* Set this very high to stay above everything */
+}
+.fixed-action-bar {
+    position: absolute; /* Parent container (phone-container) ke relative fixed rahega */
+    left: 0;
+    right: 0;
+    bottom: 80px; /* Bottom Nav ki height 80px hai, uske theek upar */
+    width: 100%;
+    height: 90px;
+    padding: 16px 18px;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 5000; /* Isse buttons content ke upar rahenge aur scroll nahi honge */
+}
+
+/* gives floating card look */
+.fixed-action-bar::before{
+    content:'';
+    position:absolute;
+    top:-14px;
+    left:0;
+    right:0;
+    height:14px;
+    background:linear-gradient(to top, rgba(241,245,249,1), rgba(241,245,249,0));
+}
+        .tab-active { color: #10b981; position: relative; }
+        .tab-active::after {
+            content: ''; position: absolute; bottom: -8px; left: 50%;
+            transform: translateX(-50%); width: 4px; height: 4px;
+            background: #10b981; border-radius: 50%;
+        }
+        .trend-line-container {
+            position: relative; height: 120px; width: 100%;
+            border-left: 1.5px solid #cbd5e1; border-bottom: 1.5px solid #cbd5e1;
+        }
+        .trend-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: visible; }
+        .dot {
+            position: absolute; width: 8px; height: 8px; background: #3b82f6;
+            border: 2px solid #fff; border-radius: 50%; transform: translate(-50%, 50%);
+            z-index: 20; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.4);
+        }
+        .dot-value {
+            position: absolute; left: 50%; transform: translateX(-50%);
+            font-size: 8px; font-weight: 700; color: #475569;
+            background: rgba(255, 255, 255, 0.95); padding: 2px 4px;
+            border-radius: 4px; border: 1px solid #e2e8f0; white-space: nowrap;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .toggle-btn-active { 
+            background: #1e293b !important; 
+            color: white !important; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .date-chip {
+            flex: 1; min-width: 0; height: 68px; display: flex;
+            flex-direction: column; align-items: center; justify-content: center;
+            border-radius: 16px; transition: all 0.3s ease; cursor: pointer;
+        }
+        .date-chip-active{
+    background:#2563eb !important;
+    color:#fff !important;
+    transform:translateY(-3px);
+    box-shadow:0 8px 18px rgba(37,99,235,.45);
+}
+
+.date-chip-active span{
+    color:#fff !important;
+}
+
+.modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 5000;
+    display: none;
+    align-items: flex-end;
+}
+        .modal-overlay.active { display: flex; }
+.modal-content {
+    background: white;
+    width: 100%;
+    border-top-left-radius: 40px;
+    border-top-right-radius: 40px;
+    padding: 20px 20px 0 20px;
+    /* This ensures it never goes behind the nav but stays tight to content */
+    max-height: calc(100% - 80px); 
+    height: auto; 
+    display: flex;
+    flex-direction: column;
+    transform: translateY(100%);
+    transition: transform 0.3s ease-out;
+    position: relative;
+}
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+
+        .form-icon-wrap {
+            display: flex; align-items: center; gap: 12px;
+            background: #f8fafc; padding: 12px 16px; border-radius: 20px;
+            border: 1.5px solid #f1f5f9; transition: all 0.2s;
+        }
+        .form-icon-wrap label {
+            display: block; margin-bottom: 1px; font-size: 9px;
+            font-weight: 900; color: #94a3b8; text-transform: uppercase;
+        }
+        .form-icon-wrap input, .form-icon-wrap select {
+    flex: 1; 
+    background: transparent; 
+    border: none; 
+    outline: none;
+    font-size: 13px; /* Slightly smaller to fit */
+    font-weight: 700; 
+    color: #1e293b; 
+    padding: 0;
+    width: 100%;
+}
+		.form-icon-wrap input[type="time"]{
+    cursor:pointer;
+    appearance:auto;
+}
+
+        .action-tab-btn {
+            flex: 1; padding: 12px; text-align: center; font-size: 12px;
+            font-weight: 800; text-transform: uppercase; border-radius: 12px;
+            transition: all 0.3s;
+        }
+        .action-tab-btn.active {
+            background-color: white; color: #1e293b;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .action-tab-btn.inactive { color: #94a3b8; }
+        
+        .break-entry-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 14px; background: #f1f5f9; border-radius: 14px; margin-bottom: 6px;
+        }
+        
+        /* Availability Grid Styling */
+        .avail-square {
+            width: 16px; height: 16px; border-radius: 4px; display: inline-block;
+        }
+        .avail-green { background-color: #10b981; border: 1px solid #059669; }
+        .avail-dark { background-color: #475569; border: 1px solid #1e293b; }
+        .avail-pending { background-color: #e2e8f0; border: 1px solid #cbd5e1; }
+        
+        .avail-grid-header {
+            display: grid; grid-template-columns: 85px repeat(7, 1fr);
+            text-align: center; font-size: 10px; font-weight: 900;
+            color: #64748b; padding: 12px 0; border-bottom: 1.5px solid #f1f5f9;
+            text-transform: uppercase;
+        }
+        .avail-grid-row {
+            display: grid; grid-template-columns: 85px repeat(7, 1fr);
+            align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9;
+            cursor: pointer; transition: background 0.2s;
+        }
+        .avail-grid-row:hover { background-color: #f8fafc; }
+        .avail-sub-row {
+            display: grid; grid-template-columns: 85px repeat(7, 1fr);
+            align-items: center; padding: 10px 0; background-color: #fcfcfc;
+            border-bottom: 1px dashed #f1f5f9;
+        }
+#sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 300px;
+    background: white;
+    transform: translateX(-100%);
+    transition: transform 0.28s cubic-bezier(.4,0,.2,1);
+    border-top-right-radius: 40px;
+    border-bottom-right-radius: 40px;
+    z-index: 20000; /* Moves sidebar in front of bottom nav */
+}
+
+#sidebar.open{
+    transform:translateX(0);
+}
+#sidebar-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15,23,42,0.55);
+    backdrop-filter: blur(2px);
+    z-index: 15000; /* Sits behind sidebar but in front of nav */
+}
+#main-content{
+    flex:1;
+    overflow-y:auto;
+    min-height:0;
+    padding-bottom:120px;
+}
+#app-wrapper{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+    background:#f8fafc;
+	position:relative;
+overflow:hidden;
+}
+.notch{
+    z-index:2000;
+}
+.status-bar{
+    position:relative;
+    z-index:2000;
+    color:#000;
+}
+.app-header{
+    flex-shrink:0;
+}
+/* bottom navigation icons visibility fix */
+.nav-icon{
+    color:#94a3b8;
+    transition:0.2s;
+}
+
+.tab-active .nav-icon{
+    color:#10b981;
+}
+/* Chat Footer */
+.chat-footer{
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:80px;
+    height:64px;
+    background:white;
+    border-top:1px solid #e2e8f0;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 10px;
+    z-index:3500;
+}
+
+.chat-input{
+    flex:1;
+    background:#f1f5f9;
+    border-radius:16px;
+    padding:10px 12px;
+    font-size:13px;
+    border:1px solid #e2e8f0;
+    outline:none;
+}
+
+.chat-icon-btn{
+    width:34px;
+    height:34px;
+    border-radius:50%;
+    background:#f1f5f9;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#475569;
+    flex-shrink:0;
+}
+
+.send-btn{
+    width:40px;
+    height:40px;
+    border-radius:12px;
+    background:#2563eb;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:15px;
+    flex-shrink:0;
+}
+/* Thin minimalist scrollbar for the whole app */
+::-webkit-scrollbar {
+    width: 4px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.1);
+    border-radius: 10px;
+}
+[id^="view-"].hidden {
+    display: none !important; /* Forces the browser to ignore the hidden screens completely */
+}
+.legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.bg-sch { background-color: #3b82f6; } /* Blue */
+.bg-act { background-color: #10b981; } /* Green */
+/* Dashboard Toggle Buttons Styling */
+.shift-toggle-container {
+    background: #f1f5f9; /* Light grey background like iOS toggles */
+    padding: 4px;
+    border-radius: 12px;
+    display: flex;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.shift-toggle-btn {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    border-radius: 8px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    color: #64748b;
+}
+
+.shift-toggle-btn.active {
+    background: white;
+    color: #1e293b;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.05);
+    transform: scale(1.02);
+}
+#timeoff-week {
+    display: flex;
+    gap: 12px;
+    padding: 10px 5px;
+    min-width: max-content;
+}
+.modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 20000;
+    display: none;
+    align-items: flex-end;
+    /* Add these two lines */
+    pointer-events: none; 
+}
+.modal-overlay.active {
+    display: flex;
+    pointer-events: auto; /* Enable clicks only when active */
+}
+/* Minimalist Contact Card Updates */
+.new-contact-tile {
+    padding: 12px; /* Inner spacing kam kar di */
+    border-radius: 20px; /* Thode sharper borders */
+    display: flex; /* Flexbox safe design */
+    align-items: center;
+    gap: 12px; /* Elements ke beech gap */
+}
+
+/* Reduced size Profile Image */
+.contact-profile-img {
+    width: 50px; /* Badi height/width ki jagah chhota circle */
+    height: 50px;
+}
+
+/* User Text Section Compacted */
+.user-text-box {
+    flex: 1; /* Space handle karne ke liye */
+}
+
+.user-name {
+    font-size: 14px; /* Title slight small */
+    margin-bottom: 2px;
+}
+
+.user-role {
+    font-size: 10px; /* Sub-text concise */
+    margin-bottom: 6px; /* Space niche contacts ke liye */
+}
+
+/* Contacts Info: Icon and text closely packed */
+.contact-icon-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px; /* Minimum legible size for visibility */
+    margin-bottom: 2px;
+}
+/* Settings Specific Styles */
+.settings-card {
+    background: white;
+    padding: 16px;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.settings-card:active { transform: scale(0.98); background: #f8fafc; }
+
+.toggle-switch {
+    width: 44px;
+    height: 24px;
+    background: #e2e8f0;
+    border-radius: 20px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+.toggle-switch.active { background: #10b981; }
+.toggle-circle {
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.3s;
+}
+.toggle-switch.active .toggle-circle { transform: translateX(20px); }
+
+.lang-radio {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #cbd5e1;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.lang-radio.selected { border-color: #3b82f6; }
+.lang-radio.selected::after {
+    content: '';
+    width: 10px;
+    height: 10px;
+    background: #3b82f6;
+    border-radius: 50%;
+}
+/* Schedule Date Scroller ko patla karne ke liye */
+#date-scroller::-webkit-scrollbar {
+    height: 3px; /* Vertical scroller ke liye width hota hai, horizontal ke liye height */
+}
+#date-scroller {
+    scrollbar-width: thin; /* Firefox ke liye */
+    padding-bottom: 8px;   /* Thoda space taaki scroller chips se chipke na */
+}
+    </style>
+</head>
+<body>
+
+<div class="phone-container">
+<div id="sidebar" class="flex flex-col">
+<div class="bg-slate-900 text-white px-5 pt-6 pb-4">
+    <div class="flex items-center gap-3 mb-3">
+        <img src="https://i.pravatar.cc/100?img=31" 
+             class="w-12 h-12 rounded-full border-2 border-white/40">
+
+        <div class="leading-tight">
+            <div class="font-bold text-sm">Mark Andrew</div>
+            <div class="text-[11px] text-slate-300">Store Manager</div>
+            <div class="text-[10px] text-slate-400">Zip Foods Franchise</div>
+        </div>
+    </div>
+
+    <div class="text-[10px] text-slate-300 flex justify-between mt-2">
+        <span>25 Feb 2026</span>
+        <span>IST (GMT+5:30)</span>
+    </div>
+
+</div>
+
+<div class="flex-1 overflow-y-auto px-3 py-4 space-y-5 text-[13px] font-semibold">
+
+<div>
+
+    <div class="text-slate-400 text-[11px] font-bold px-3 mb-2 uppercase">
+        Home
+    </div>
+
+    <div class="space-y-1">
+
+        <button onclick="switchView('dashboard');toggleSidebar()" 
+        class="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-100">
+            <i class="fas fa-inbox w-5"></i> Requests
+        </button>
+
+        <button onclick="switchView('schedule');toggleSidebar()" 
+        class="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-100">
+            <i class="far fa-calendar w-5"></i> Schedule
+        </button>
+
+        <button onclick="switchView('unassigned');toggleSidebar()" 
+        class="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-100">
+            <i class="fas fa-user-slash w-5"></i> Unassigned Shift
+        </button>
+
+    </div>
+
+</div>
+
+<div>
+
+    <div class="text-slate-400 text-[11px] font-bold px-3 mb-2 uppercase">
+        Manage
+    </div>
+
+    <div class="space-y-1">
+
+        <button onclick="openEmployeeScreen('employees');toggleSidebar()"
+        class="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-100">
+            <i class="fas fa-users w-5"></i> Employees
+        </button>
+
+        <button onclick="switchView('timeoff');toggleSidebar()"
+        class="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-100">
+            <i class="fas fa-user-clock w-5"></i> Employees Time Off
+        </button>
+
+        <button onclick="switchView('availability');toggleSidebar()"
+        class="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-100">
+            <i class="fas fa-calendar-check w-5"></i> Employees Availability
+        </button>
+
+        <button onclick="switchView('cloud');toggleSidebar()"
+        class="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-100">
+            <i class="fas fa-cloud w-5"></i> Cloud Library
+        </button>
+	</div>
+	
+<div class="mt-6">
+    <div class="text-slate-400 text-[11px] font-bold px-3 mb-2 uppercase tracking-wider">
+        Communication
+    </div>
+	    <div class="space-y-1">	
+		
+		<button onclick="switchView('contacts');toggleSidebar()"
+        class="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-100">
+            <i class="fas fa-cloud w-5"></i> Contacts
+        </button>
+		
+			<button onclick="switchView('chitchat');toggleSidebar()"
+class="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-100">
+<i class="fas fa-comments w-5"></i> Chitchat
+</button>
+		
+		<button onclick="switchView('broadcast');toggleSidebar()"
+        class="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-100">
+            <i class="fas fa-cloud w-5"></i> Broadcast
+        </button>
+
+    </div>
+	</div>
+	
+	
+<div class="mt-6">
+    <div class="text-slate-400 text-[11px] font-bold px-3 mb-2 uppercase tracking-wider">
+        Settings
+    </div>
+	    <div class="space-y-1">
+		
+		<button onclick="switchView('shared');toggleSidebar()"
+class="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-100">
+<i class="fas fa-mobile-alt w-5"></i> Shared Device
+</button>
+
+		</div>
+	</div>
+		
+		
+
+<div class="mt-6">
+    <div class="text-slate-400 text-[11px] font-bold px-3 mb-2 uppercase tracking-wider">
+        My Account
+    </div>
+	    <div class="space-y-1">
+
+<button onclick="openSupport();toggleSidebar()"
+    class="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-100">
+    <i class="fas fa-life-ring w-5"></i> Support
+</button>
+</div>
+</div>
+</div>
+
+
+	
+
+<div class="border-t p-3 space-y-2">
+
+    <button onclick="switchView('settings');toggleSidebar()" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-100">
+    <i class="fas fa-cog w-5"></i> Settings
+</button>
+
+    <button class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-red-500 hover:bg-red-50">
+        <i class="fas fa-sign-out-alt w-5"></i> Log Out
+    </button>
+</div>
+</div>
+
+</div>
+
+<!-- Dark overlay -->
+
+<div id="sidebar-overlay" class="hidden" onclick="toggleSidebar()"></div>
+    <div class="notch"></div>
+    <div class="status-bar">
+        <span>12:54</span>
+        <div class="flex gap-2">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full text-green-500"></i>
+        </div>
+    </div>
+	
+	<div id="app-wrapper">
+    <!-- Header -->
+    <div class="app-header" id="app-header">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <button id="header-back" class="text-xl hidden" onclick="goBack()"><i class="fas fa-arrow-left"></i></button>
+                <div class="flex items-center gap-3" id="header-brand">
+                    <button id="header-menu" class="text-xl" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                    <span class="text-lg font-bold">Zip Schedule</span>
+                </div>
+                <h1 id="page-title" class="text-lg font-bold tracking-tight"></h1>
+            </div>
+            <div class="flex items-center gap-4">
+<button onclick="switchView('ai-analytics')" class="relative flex items-center justify-center w-8 h-8 rounded-full hover:bg-slate-700/50 transition-all">
+    <i class="fas fa-magic text-[16px] text-amber-400"></i>
+    <span class="absolute top-1 right-1 w-2 h-2 bg-emerald-500 rounded-full border-2 border-[#1e293b] animate-pulse"></span>
+</button>
+                <i class="far fa-comment-alt text-lg"></i>
+                <button onclick="showLocationPicker()" class="relative">
+                    <i class="fas fa-map-marker-alt text-lg"></i>
+                    <span class="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full border-2 border-slate-800"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+ <div id="main-content" class="flex-1 overflow-y-auto bg-slate-50 scroll-hide p-5 relative">
+        
+        <!-- DASHBOARD VIEW -->
+        <div id="view-dashboard">
+		
+		<!-- Calendar View -->
+<div class="flex items-center justify-center gap-2 -mt-3 mb-2 px-4">
+    <div class="h-[1px] bg-slate-200 flex-1"></div>
+    
+    <div class="flex items-center gap-1.5 bg-blue-50 px-4 py-0.5 rounded-full border border-blue-100 shadow-sm active:scale-95 transition-all">
+        <button class="text-blue-400 hover:text-blue-600 p-0.5">
+            <i class="fas fa-caret-left text-[10px]"></i>
+        </button>
+        
+        <span class="text-[12px] font-[800] text-slate-800 uppercase tracking-tight whitespace-nowrap" style="font-family: 'Inter', sans-serif;">
+            Feb 22 - Feb 28, 2026
+        </span>
+        
+        <button class="text-blue-400 hover:text-blue-600 p-0.5">
+            <i class="fas fa-caret-right text-[10px]"></i>
+        </button>
+    </div>
+    
+    <div class="h-[1px] bg-slate-200 flex-1"></div>
+</div>
+            <!-- KPIs -->
+            <div class="grid grid-cols-3 gap-1 mb-8 px-2 pt-2">
+                <div class="flex flex-col items-center">
+                    <i class="fas fa-user-clock text-blue-500 text-[12px] mb-1.5"></i>
+                    <p class="text-[14px] font-bold text-slate-500  tracking-wide">Labor %</p>
+                    <p class="text-base font-black text-slate-800">12.4%</p>
+                </div>
+                <div class="flex flex-col items-center border-x border-slate-200">
+                    <i class="fas fa-chart-line text-emerald-500 text-[12px] mb-1.5"></i>
+                    <p class="text-[14px] font-bold text-slate-500  tracking-wide">Coverage</p>
+                    <p class="text-base font-black text-slate-800">98.2%</p>
+                </div>
+                <div class="flex flex-col items-center">
+                    <i class="fas fa-bolt text-amber-500 text-[12px] mb-1.5"></i>
+                    <p class="text-[14px] font-bold text-slate-500  tracking-wide">SPLH</p>
+                    <p class="text-base font-black text-slate-800">$45.2</p>
+                </div>
+            </div>
+
+            <!-- Trending Hours -->
+            <div class="mb-6 bg-blue-50 border-2 border-blue-100 shadow-md p-4 rounded-3xl relative -mt-4">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-slate-800 text-sm font-bold">Trending Hours</h2>
+                        <button onclick="maximizeTrend()" class="text-slate-400 hover:text-slate-600 transition-colors"><i class="fas fa-expand-alt text-[10px]"></i></button>
+                    </div>
+                    <div class="flex bg-white/50 p-0.5 rounded-lg">
+                        <button onclick="toggleTrend('today')" id="btn-today" class="toggle-btn-active px-3 py-1 text-[9px] font-bold rounded-md transition-all">TODAY</button>
+                        <button onclick="toggleTrend('weekly')" id="btn-weekly" class="px-3 py-1 text-[9px] font-bold text-slate-500 rounded-md transition-all ml-1">WEEKLY</button>
+                    </div>
+                </div>
+              <div class="flex gap-4 items-start"> <div class="w-[72%] flex flex-col ml-2"> 
+        
+        <div class="flex h-[130px]">
+            <div id="y-axis-labels" class="flex flex-col justify-between text-[9px] text-slate-500 font-black pr-3 h-[120px] -mt-2">
+                <span>100</span><span>50</span><span>0</span>
+            </div>
+            
+            <div class="flex-1 relative border-l-2 border-b-2 border-slate-400">
+                <div class="trend-line-container !border-none" id="graph-container" style="height: 120px;"></div>
+            </div>
+        </div>
+
+
+
+        <div class="flex justify-between px-4" id="x-axis-labels">
+            <span class="text-[8px] text-slate-400 font-bold">4A</span>
+            <span class="text-[8px] text-slate-400 font-bold">12P</span>
+            <span class="text-[8px] text-slate-400 font-bold">8P</span>
+            <span class="text-[8px] text-slate-400 font-bold">4A</span>
+        </div>
+		        <div class="flex justify-center gap-4 mt-3 mb-2">
+            <div class="flex items-center gap-1.5">
+                <span class="legend-dot bg-sch"></span>
+                <span class="text-[9px] font-black text-slate-500 uppercase">Forecasted</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+                <span class="legend-dot bg-act"></span>
+                <span class="text-[9px] font-black text-slate-500 uppercase">Scheduled</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="w-[28%] space-y-4 border-l border-white pl-3 pt-2">
+        <div><p class="text-[8px] font-black text-slate-400 uppercase">For. Hours</p><p class="text-xs font-black text-slate-800" id="val-sch">58.5h</p></div>
+        <div><p class="text-[8px] font-black text-slate-400 uppercase">Sch. Hours</p><p class="text-xs font-black text-emerald-600" id="val-act">42.2h</p></div>
+    </div>
+</div>
+            </div>
+
+            <!-- Needing/Awaiting Requests Section -->
+            <div class="mb-6">
+                <h2 class="text-slate-800 text-sm font-bold mb-4 px-1">Needing/Awaiting Requests</h2>
+                <div class="grid grid-cols-4 gap-2">
+                    <button onclick="openActionDetail('Time Off')" class="flex flex-col items-center py-1 active:scale-95">
+                        <div class="w-14 h-14 bg-orange-500 text-white rounded-2xl flex items-center justify-center shadow-lg relative">
+                            <i class="fas fa-user-clock text-2xl"></i>
+                            <span class="absolute -top-1.5 -right-1.5 bg-rose-600 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-white">4</span>
+                        </div>
+                        <span class="text-[12px] font-bold text-slate-800 mt-2">Time Off</span>
+                    </button>
+                    <button onclick="openActionDetail('Swap Shift')" class="flex flex-col items-center py-1 active:scale-95">
+                        <div class="w-14 h-14 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg relative">
+                            <i class="fas fa-sync-alt text-2xl"></i>
+                            <span class="absolute -top-1.5 -right-1.5 bg-rose-600 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-white">3</span>
+                        </div>
+                        <span class="text-[12px] font-bold text-slate-800 mt-2">Swap Shift</span>
+                    </button>
+                    <button onclick="openActionDetail('Availability')" class="flex flex-col items-center py-1 active:scale-95">
+                        <div class="w-14 h-14 bg-emerald-500 text-white rounded-2xl flex items-center justify-center shadow-lg relative">
+                            <i class="fas fa-calendar-check text-2xl"></i>
+                            <span class="absolute -top-1.5 -right-1.5 bg-rose-600 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-white">3</span>
+                        </div>
+                        <span class="text-[12px] font-bold text-slate-800 mt-2">Availability</span>
+                    </button>
+                    <button onclick="openActionDetail('Available Shifts')" class="flex flex-col items-center py-1 active:scale-95">
+                        <div class="w-14 h-14 bg-violet-600 text-white rounded-2xl flex items-center justify-center shadow-lg relative">
+                            <i class="fas fa-bullhorn text-2xl"></i>
+                            <span class="absolute -top-1.5 -right-1.5 bg-rose-600 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-white">5</span>
+                        </div>
+                        <span class="text-[12px] font-bold text-slate-800 mt-2">Available Shifts</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Shifts -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-3 px-1">
+                    <h2 class="text-slate-800 text-sm font-bold">Scheduled Shifts</h2>
+                    <div class="shift-toggle-container">
+    <button onclick="toggleShiftList('upcoming')" id="btn-upcoming" class="shift-toggle-btn active">UPCOMING</button>
+    <button onclick="toggleShiftList('current')" id="btn-current" class="shift-toggle-btn">CURRENT</button>
+</div>
+                </div>
+                <div id="shift-list-container" class="space-y-2 pb-10"></div>
+            </div>
+        </div>
+
+        <!-- Detail Action List View -->
+        <div id="view-action-list" class="hidden">
+            <div class="mb-4 flex items-center justify-between px-1">
+                <h2 id="action-list-title" class="text-xl font-black text-slate-800 tracking-tight"></h2>
+                <span id="action-count-badge" class="bg-slate-800 text-white text-[10px] font-bold px-3 py-1 rounded-full"></span>
+            </div>
+            
+            <div class="bg-slate-100 p-1 rounded-2xl flex mb-6">
+                <button id="tab-needing" onclick="setActionTab('Needing')" class="action-tab-btn active">Needing</button>
+                <button id="tab-awaiting" onclick="setActionTab('Awaiting')" class="action-tab-btn inactive">Awaiting</button>
+            </div>
+
+            <div id="dynamic-action-list" class="space-y-3"></div>
+        </div>
+
+        <!-- AVAILABILITY GRID VIEW -->
+        <div id="view-availability-grid" class="hidden">
+            <div class="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 mb-20">
+                <div class="flex items-center gap-4 mb-6 border-b pb-4">
+                    <img id="avail-grid-emp-img" src="" class="w-14 h-14 rounded-full border-2 border-blue-50">
+                    <div>
+                        <h2 id="avail-grid-emp-name" class="text-lg font-black text-slate-800"></h2>
+                        <p class="text-xs text-slate-400 font-bold uppercase">Weekly Availability</p>
+                    </div>
+                </div>
+
+                <div class="avail-grid-header">
+                    <span class="text-left pl-1">Time <i class="far fa-clock"></i></span>
+                    <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+                </div>
+
+                <!-- Summary Row -->
+                <div class="avail-grid-row font-black bg-slate-50/50">
+                    <span class="text-[11px] text-slate-600 pl-1">Daily Status</span>
+                    <span><div class="avail-square avail-pending"></div></span>
+                    <span><div class="avail-square avail-dark"></div></span>
+                    <span><div class="avail-square avail-pending"></div></span>
+                    <span><div class="avail-square avail-green"></div></span>
+                    <span><div class="avail-square avail-pending"></div></span>
+                    <span><div class="avail-square avail-pending"></div></span>
+                    <span><div class="avail-square avail-pending"></div></span>
+                </div>
+
+                <div id="avail-sections-container" class="space-y-0 mt-2"></div>
+            </div>
+
+            <div class="fixed-action-bar" style="background: white; border-top: 1px solid #f1f5f9; bottom: 80px;">
+                <button onclick="askConfirmation('Availability', 'Declined')" class="flex-1 bg-red-500 text-white font-black py-4 rounded-2xl text-[11px] uppercase tracking-widest active:scale-95 shadow-lg shadow-red-100">Disapprove</button>
+                <button onclick="askConfirmation('Availability', 'Approved')" class="flex-1 bg-emerald-500 text-white font-black py-4 rounded-2xl text-[11px] uppercase tracking-widest active:scale-95 shadow-lg shadow-emerald-100">Approve</button>
+            </div>
+        </div>
+		
+		<!-- Availbility Shift VIEW -->
+		
+		<div id="view-available-shifts-list" class="hidden absolute inset-0 bg-slate-50 p-5 overflow-y-auto" style="z-index: 10;">
+    <div class="mb-4 flex items-center justify-between px-1">
+        <h2 class="text-xl font-black text-slate-800 tracking-tight">Available Shifts</h2>
+        <span id="avail-shifts-count" class="bg-slate-800 text-white text-[10px] font-bold px-3 py-1 rounded-full">4 Pending</span>
+    </div>
+    
+    <div class="bg-slate-100 p-1 rounded-2xl flex mb-6">
+        <button id="tab-avail-needing" onclick="setAvailShiftsTab('Needing')" class="action-tab-btn active">Needing</button>
+        <button id="tab-avail-awaiting" onclick="setAvailShiftsTab('Awaiting')" class="action-tab-btn inactive">Awaiting</button>
+    </div>
+
+    <div id="available-shifts-render-list" class="space-y-3">
+        </div>
+</div>
+
+<div id="view-available-shift-detail" class="hidden absolute inset-0 bg-slate-50 p-5 pb-40 overflow-y-auto" style="z-index: 20;">
+    <div class="bg-white p-5 rounded-[32px] border mb-5 flex items-center gap-4 shadow-sm">
+        <div id="detail-offered-img" class="w-14 h-14 rounded-full bg-fuchsia-500 text-white flex items-center justify-center text-xl font-bold">E</div>
+        <div>
+            <p class="text-[10px] text-slate-400 font-bold uppercase">Offered By</p>
+            <h4 id="detail-offered-name" class="font-black text-slate-800 text-lg">Emp25</h4>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 mb-5">
+        <div class="bg-white p-4 rounded-3xl border shadow-sm">
+            <label class="text-[10px] font-black text-slate-400 uppercase block mb-1"><i class="far fa-calendar-alt text-blue-500 mr-1"></i> Date</label>
+            <p id="detail-shift-date" class="text-xs font-bold text-slate-700">Thu, Feb 26, 2026</p>
+        </div>
+        <div class="bg-white p-4 rounded-3xl border shadow-sm relative">
+            <span class="absolute top-2 right-2 bg-blue-100 text-blue-600 text-[8px] font-black px-1.5 py-0.5 rounded">08:00 Hrs</span>
+            <label class="text-[10px] font-black text-slate-400 uppercase block mb-1"><i class="far fa-clock text-blue-500 mr-1"></i> Time</label>
+            <p id="detail-shift-time" class="text-xs font-bold text-slate-700">8:00a-4:00p</p>
+        </div>
+    </div>
+
+    <div class="bg-white p-4 rounded-3xl border shadow-sm mb-5 flex items-center justify-between">
+        <span class="text-[10px] font-black text-slate-400 uppercase">Position</span>
+        <span id="detail-shift-pos" class="bg-slate-100 text-slate-700 px-8 py-2 rounded-xl text-xs font-bold">Cashier</span>
+    </div>
+
+    <div class="bg-slate-200/50 p-5 rounded-[32px] border border-dashed border-slate-300 min-h-[150px]">
+        <p class="text-slate-500 italic text-sm">No notes for this shift...</p>
+    </div>
+
+    <div class="fixed-action-bar">
+        <button onclick="processRequest('Declined')" class="flex-1 bg-rose-500 text-white font-black py-4 rounded-2xl text-[11px] uppercase tracking-widest shadow-lg shadow-rose-100">Decline</button>
+        <button onclick="processRequest('Approved')" class="flex-1 bg-emerald-500 text-white font-black py-4 rounded-2xl text-[11px] uppercase tracking-widest shadow-lg shadow-emerald-100">Request Shift</button>
+    </div>
+</div>
+
+		<!-- Support VIEW -->
+		
+		<div id="view-support" class="hidden absolute inset-0 bg-slate-50 p-5 overflow-y-auto" style="z-index: 5;">
+    <div class="flex gap-2 mb-6">
+        <div class="flex-1 bg-white border border-slate-200 rounded-2xl flex items-center px-4 shadow-sm">
+            <i class="fas fa-search text-slate-400 mr-2 text-xs"></i>
+            <input type="text" placeholder="Search tickets..." class="w-full py-3 text-sm outline-none font-medium" oninput="filterSupportTickets(this.value)">
+        </div>
+        <select id="ticket-status-filter" onchange="renderTicketsList()" class="bg-white border border-slate-200 rounded-2xl px-3 text-[10px] font-black uppercase shadow-sm outline-none">
+            <option value="Open">Open</option>
+            <option value="Closed">Closed</option>
+            <option value="All">All</option>
+        </select>
+    </div>
+
+    <div id="ticket-list-render" class="space-y-4"></div>
+
+    <div class="fixed-action-bar">
+        <button onclick="openAddTicketScreen()" class="flex-1 bg-slate-900 text-white font-black py-4 rounded-3xl text-xs uppercase tracking-widest shadow-lg active:scale-95 transition-all">
+            <i class="fas fa-plus mr-2"></i> Add New Ticket
+        </button>
+    </div>
+</div>
+
+<div id="view-support-add" class="hidden absolute inset-0 bg-white p-5 overflow-y-auto pb-40" style="z-index: 10;">
+    <div class="bg-slate-50 p-6 rounded-[32px] border border-slate-100 mb-6">
+        <div class="mb-5">
+            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Ticket ID (Auto)</label>
+            <input id="new-ticket-id" class="w-full bg-slate-200/50 border-none rounded-xl p-3 text-sm font-bold text-slate-500" readonly>
+        </div>
+        <div class="form-icon-wrap mb-4">
+            <div class="flex-1">
+                <label>Ticket Title</label>
+                <input id="new-ticket-title" placeholder="What is the issue about?">
+            </div>
+        </div>
+        <div class="form-icon-wrap mb-4">
+            <i class="fas fa-cube text-blue-500"></i>
+            <div class="flex-1">
+                <label>Category / Product</label>
+                <select id="new-ticket-cat">
+                    <option>Technical Issue</option>
+                    <option>Scheduling Problem</option>
+                    <option>Account Issue</option>
+                    <option>Other</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-icon-wrap items-start pt-3 mb-4">
+            <div class="flex-1">
+                <label>Description</label>
+                <textarea id="new-ticket-msg" class="w-full bg-transparent border-none outline-none text-sm font-bold text-slate-700 min-h-[120px] resize-none" placeholder="Explain your issue in detail..."></textarea>
+            </div>
+        </div>
+        <div onclick="document.getElementById('ticket-file').click()" class="border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center bg-white cursor-pointer active:bg-slate-50">
+            <i class="fas fa-paperclip text-slate-400 mb-2"></i>
+            <p class="text-[10px] font-bold text-slate-400 uppercase" id="ticket-file-name">Attach relevant file</p>
+            <input type="file" id="ticket-file" hidden onchange="document.getElementById('ticket-file-name').innerText=this.files[0].name">
+        </div>
+    </div>
+    <div class="fixed-action-bar">
+        <button onclick="goBack()" class="flex-1 bg-slate-100 text-slate-600 font-black py-4 rounded-2xl text-[11px] uppercase">Cancel</button>
+        <button onclick="submitNewTicket()" class="flex-1 bg-emerald-600 text-white font-black py-4 rounded-2xl text-[11px] uppercase shadow-lg shadow-emerald-100">Submit Ticket</button>
+    </div>
+</div>
+
+<div id="view-support-detail" class="hidden absolute inset-0 bg-slate-50 p-5 overflow-y-auto pb-40" style="z-index: 15;">
+    <div class="bg-white p-6 rounded-[32px] border shadow-sm mb-6">
+        <div class="flex justify-between items-start mb-4">
+            <span id="detail-ticket-id" class="text-[10px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase">#TIC102</span>
+            <span id="detail-ticket-status" class="text-[10px] font-black text-amber-600 uppercase">Open</span>
+        </div>
+        <h3 id="detail-ticket-title" class="text-lg font-black text-slate-800 mb-2 leading-tight">Syncing Issue with Mobile App</h3>
+        <p id="detail-ticket-meta" class="text-[10px] text-slate-400 font-bold uppercase mb-4">Added By Mark • Feb 27, 2026 (IST)</p>
+        <div class="border-t pt-4">
+            <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Description</p>
+            <p id="detail-ticket-desc" class="text-sm text-slate-600 leading-relaxed font-medium">Description text goes here...</p>
+        </div>
+    </div>
+
+    <h5 class="text-[11px] font-black text-slate-400 uppercase px-2 mb-3">Comments</h5>
+    <div id="detail-ticket-comments" class="space-y-3 mb-6">
+        <div class="bg-blue-50/50 p-4 rounded-2xl border border-blue-100">
+            <p class="text-xs text-slate-600 font-medium">Our team is looking into it. We will update you shortly.</p>
+            <p class="text-[8px] text-blue-400 font-bold mt-2 uppercase">Support Team • 12:40 PM</p>
+        </div>
+    </div>
+</div>
+		
+		
+
+        <!-- SCHEDULE VIEW -->
+      <div id="view-schedule" class="hidden pb-6">
+            
+            <div class="flex items-center justify-center gap-2 -mt-2 mb-3 px-4">
+                <div class="h-[1px] bg-slate-200 flex-1"></div>
+                <div class="flex items-center gap-2 bg-blue-50 px-4 py-1 rounded-full border border-blue-100 shadow-sm active:scale-95 transition-all">
+                    <button class="text-blue-500 p-0.5"><i class="fas fa-caret-left text-[11px]"></i></button>
+                    <span class="text-[12px] font-[900] text-slate-800 uppercase tracking-tight" style="font-family: 'Inter', sans-serif;">
+                        Feb 22 - Feb 28, 2026
+                    </span>
+                    <button class="text-blue-500 p-0.5"><i class="fas fa-caret-right text-[11px]"></i></button>
+                </div>
+                <div class="h-[1px] bg-slate-200 flex-1"></div>
+            </div>
+
+            <div class="flex items-center mb-4 px-1">
+                <div class="flex-1 flex gap-1 justify-between" id="date-scroller">
+                    </div>
+            </div>
+
+            <div id="scheduled-list" class="space-y-3 mt-2"></div>
+        </div>
+		<!-- UNASSIGNED SHIFT VIEW -->
+	<div id="view-unassigned" class="hidden pb-6">
+
+    <!-- Week Calendar -->
+    <div class="flex items-center gap-2 mb-6 -mx-5 px-5">
+        <div class="flex-1 flex gap-3 overflow-x-auto scroll-hide pb-2" id="unassigned-date-scroller"></div>
+    </div>
+
+    <!-- Unassigned Shift List -->
+    <div id="unassigned-list" class="space-y-3"></div>
+
+    <!-- Create Button -->
+	<div id="multi-select-bar" class="fixed-action-bar hidden">
+    <button onclick="broadcastShifts()" 
+        class="flex-1 bg-violet-600 text-white font-black py-4 rounded-2xl text-[11px] uppercase shadow-lg">
+        Offer Selected Shifts
+    </button>
+    <button onclick="exitSelectionMode()" 
+        class="bg-slate-200 text-slate-700 font-black py-4 px-5 rounded-2xl text-[11px] uppercase">
+        Cancel
+    </button>
+</div>
+	
+
+	</div>
+	<!-- ASSIGN SHIFT VIEW -->
+<div id="view-assign-shift" class="hidden flex flex-col h-full pb-40 overflow-y-auto scroll-hide">
+
+    <!-- Shift Info -->
+    <div class="bg-white p-5 rounded-3xl border mb-5">
+        <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="form-icon-wrap px-3">
+                <div class="flex-1">
+                    <label>Start</label>
+                    <input type="time" id="assign-start" value="09:00">
+                </div>
+            </div>
+            <div class="form-icon-wrap px-3">
+                <div class="flex-1">
+                    <label>End</label>
+                    <input type="time" id="assign-end" value="17:00">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-icon-wrap">
+            <i class="fas fa-briefcase text-orange-500"></i>
+            <div class="flex-1">
+                <label>Position</label>
+                <select id="assign-position">
+                    <option>Crew</option>
+                    <option>Cook</option>
+                    <option>Cashier</option>
+                    <option>Shift Lead</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="bg-slate-100 p-1 rounded-2xl flex mb-5">
+        <button id="tab-eligible" onclick="switchAssignTab('eligible')" class="action-tab-btn active">Eligible</button>
+        <button id="tab-others" onclick="switchAssignTab('others')" class="action-tab-btn inactive">Others</button>
+    </div>
+
+    <!-- Employee List -->
+    <div id="assign-employee-list" class="space-y-3"></div>
+
+    <!-- Assign Button -->
+
+</div>
+<!-- EMPLOYEES VIEW -->
+
+<div id="view-employees" class="hidden pb-40">
+
+
+<div class="space-y-3">
+
+    <div onclick="openEmployeeProfile('Mark Andrew','31','Store Manager')"
+class="bg-white p-4 rounded-3xl border flex items-center gap-4 shadow-sm cursor-pointer active:scale-[0.98] transition">
+        <img src="https://i.pravatar.cc/100?img=31" class="w-12 h-12 rounded-full">
+        <div class="flex-1">
+            <h4 class="font-bold text-slate-800">Mark Andrew</h4>
+            <p class="text-[11px] text-blue-500 font-bold">Store Manager</p>
+        </div>
+        <span class="text-[10px] bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-bold">Active</span>
+    </div>
+   <div onclick="openEmployeeProfile('Anita Roy','32','Cashier')"
+class="bg-white p-4 rounded-3xl border flex items-center gap-4 shadow-sm cursor-pointer active:scale-[0.98] transition">
+        <img src="https://i.pravatar.cc/100?img=32" class="w-12 h-12 rounded-full">
+        <div class="flex-1">
+            <h4 class="font-bold text-slate-800">Anita Roy</h4>
+            <p class="text-[11px] text-blue-500 font-bold">Cashier</p>
+        </div>
+        <span class="text-[10px] bg-amber-100 text-amber-700 px-3 py-1 rounded-full font-bold">Part Time</span>
+    </div>
+
+    <div onclick="openEmployeeProfile('Davis Smith','33','Line Cook')"
+class="bg-white p-4 rounded-3xl border flex items-center gap-4 shadow-sm cursor-pointer active:scale-[0.98] transition">
+        <img src="https://i.pravatar.cc/100?img=33" class="w-12 h-12 rounded-full">
+        <div class="flex-1">
+            <h4 class="font-bold text-slate-800">David Smith</h4>
+            <p class="text-[11px] text-blue-500 font-bold">Line Cook</p>
+        </div>
+        <span class="text-[10px] bg-rose-100 text-rose-700 px-3 py-1 rounded-full font-bold">Unavailable</span>
+    </div>
+
+</div>
+<div class="fixed-action-bar">
+    <button onclick="alert('Import Employees placeholder')"
+    class="flex-1 bg-slate-200 text-slate-700 font-black py-4 rounded-2xl">
+        Import
+    </button>
+
+    <button onclick="switchView('add-employee')"
+    class="flex-1 bg-blue-600 text-white font-black py-4 rounded-2xl">
+        Add Employee
+    </button>
+</div>
+
+
+
+</div>
+
+<!-- EDIT EMPLOYEE -->
+<div id="view-edit-employee" class="hidden pb-40">
+
+<!-- profile header -->
+<div class="bg-white rounded-3xl border p-6 text-center mb-5">
+    <div class="relative w-fit mx-auto">
+        <img id="edit-emp-img" 
+        class="w-24 h-24 rounded-full border-4 border-slate-100 object-cover">
+
+        <div class="absolute bottom-0 right-0 bg-slate-900 text-white w-7 h-7 rounded-full flex items-center justify-center text-xs shadow">
+            <i class="fas fa-camera"></i>
+        </div>
+    </div>
+
+    <h3 id="edit-emp-name" class="mt-3 font-black text-slate-800 text-lg"></h3>
+    <p id="edit-emp-pos" class="text-[11px] font-bold text-blue-600 uppercase"></p>
+</div>
+
+<!-- form -->
+<div class="space-y-4">
+
+<div class="grid grid-cols-2 gap-3">
+    <div class="form-icon-wrap">
+        <div class="flex-1">
+            <label>First Name</label>
+            <input id="emp-first">
+        </div>
+    </div>
+
+    <div class="form-icon-wrap">
+        <div class="flex-1">
+            <label>Last Name</label>
+            <input id="emp-last">
+        </div>
+    </div>
+</div>
+
+<div class="form-icon-wrap">
+    <div class="flex-1">
+        <label>Email Address</label>
+        <input id="emp-email">
+    </div>
+</div>
+
+<div class="grid grid-cols-2 gap-3">
+    <div class="form-icon-wrap">
+        <div class="flex-1">
+            <label>Phone Number</label>
+            <input id="emp-phone">
+        </div>
+    </div>
+
+    <div class="form-icon-wrap">
+        <div class="flex-1">
+            <label>Date Of Birth</label>
+            <input type="date" id="emp-dob">
+        </div>
+    </div>
+</div>
+
+<!-- dropdowns -->
+
+<div class="form-icon-wrap">
+<select id="emp-type">
+<option>Full Time</option>
+<option>Part Time</option>
+<option>Seasonal</option>
+</select>
+</div>
+
+<div class="grid grid-cols-2 gap-3">
+<div class="form-icon-wrap">
+<select id="emp-position">
+<option>Crew</option>
+<option>Cashier</option>
+<option>Cook</option>
+<option>Shift Lead</option>
+<option>Manager</option>
+</select>
+</div>
+
+<div class="form-icon-wrap">
+<select id="emp-site">
+<option>Main Store</option>
+<option>Drive Thru</option>
+<option>Food Court</option>
+</select>
+</div>
+</div>
+
+<div class="form-icon-wrap">
+<select id="emp-jobcode">
+<option>JC101</option>
+<option>JC102</option>
+<option>JC103</option>
+</select>
+</div>
+
+<div class="form-icon-wrap">
+<input placeholder="Employee ID" id="emp-id">
+</div>
+
+<div class="grid grid-cols-2 gap-3 items-center">
+<div class="flex items-center gap-3">
+<label class="text-xs font-bold text-slate-500 uppercase">ACA</label>
+<input type="checkbox" id="emp-aca" class="w-5 h-5">
+</div>
+
+<div class="form-icon-wrap">
+<input placeholder="Max hrs / week" id="emp-maxhrs">
+</div>
+</div>
+
+</div>
+</div>
+<div id="view-add-employee" class="hidden pb-40">
+
+<!-- profile header -->
+<div class="bg-white rounded-3xl border p-6 text-center mb-5">
+    <div class="relative w-fit mx-auto">
+        <img src="https://i.pravatar.cc/150?img=12"
+class="w-24 h-24 rounded-full border-4 border-slate-100 object-cover">
+
+        <div class="absolute bottom-0 right-0 bg-slate-900 text-white w-7 h-7 rounded-full flex items-center justify-center text-xs shadow">
+            <i class="fas fa-camera"></i>
+        </div>
+    </div>
+
+    <h3 class="mt-3 font-black text-slate-800 text-lg">Add Employee</h3>
+</div>
+
+<!-- form -->
+<div class="space-y-4">
+
+<div class="grid grid-cols-2 gap-3">
+    <div class="form-icon-wrap">
+        <div class="flex-1">
+            <label>First Name</label>
+            <input id="emp-first">
+        </div>
+    </div>
+
+    <div class="form-icon-wrap">
+        <div class="flex-1">
+            <label>Last Name</label>
+            <input id="emp-last">
+        </div>
+    </div>
+</div>
+
+<div class="form-icon-wrap">
+    <div class="flex-1">
+        <label>Email Address</label>
+        <input id="emp-email">
+    </div>
+</div>
+
+<div class="grid grid-cols-2 gap-3">
+    <div class="form-icon-wrap">
+        <div class="flex-1">
+            <label>Phone Number</label>
+            <input id="emp-phone">
+        </div>
+    </div>
+
+    <div class="form-icon-wrap">
+        <div class="flex-1">
+            <label>Date Of Birth</label>
+            <input type="date" id="emp-dob">
+        </div>
+    </div>
+</div>
+
+<!-- dropdowns -->
+
+<div class="form-icon-wrap">
+<select id="emp-type">
+<option>Full Time</option>
+<option>Part Time</option>
+<option>Seasonal</option>
+</select>
+</div>
+
+<div class="grid grid-cols-2 gap-3">
+<div class="form-icon-wrap">
+<select id="emp-position">
+<option>Crew</option>
+<option>Cashier</option>
+<option>Cook</option>
+<option>Shift Lead</option>
+<option>Manager</option>
+</select>
+</div>
+
+<div class="form-icon-wrap">
+<select id="emp-site">
+<option>Main Store</option>
+<option>Drive Thru</option>
+<option>Food Court</option>
+</select>
+</div>
+</div>
+
+<div class="form-icon-wrap">
+<select id="emp-jobcode">
+<option>JC101</option>
+<option>JC102</option>
+<option>JC103</option>
+</select>
+</div>
+
+<div class="form-icon-wrap">
+<input placeholder="Employee ID" id="emp-id">
+</div>
+
+<div class="grid grid-cols-2 gap-3 items-center">
+<div class="flex items-center gap-3">
+<label class="text-xs font-bold text-slate-500 uppercase">ACA</label>
+<input type="checkbox" id="emp-aca" class="w-5 h-5">
+</div>
+
+<div class="form-icon-wrap">
+<input placeholder="Max hrs / week" id="emp-maxhrs">
+</div>
+</div>
+
+</div>
+</div>
+
+<div id="view-emp-pending" class="hidden pb-40">
+
+<div class="space-y-3">
+
+<div onclick="openPendingReview('Rahul Verma', '41')" class="bg-white p-5 rounded-[32px] border flex items-center gap-4 shadow-sm active:scale-[0.98] transition-all cursor-pointer">
+    <img src="https://i.pravatar.cc/100?img=41" class="w-12 h-12 rounded-full object-cover">
+    <div class="flex-1">
+        <h4 class="font-bold text-slate-800">Rahul Verma</h4>
+        <p class="text-[11px] text-blue-500 font-bold">Pending Review</p>
+    </div>
+    <i class="fas fa-chevron-right text-slate-300 text-sm"></i>
+</div>
+
+</div>
+</div>
+<div id="view-emp-ignored" class="hidden pb-40">
+
+<div class="space-y-3">
+
+<div class="bg-white p-4 rounded-3xl border flex items-center gap-4 shadow-sm opacity-70">
+<img src="https://i.pravatar.cc/100?img=45" class="w-12 h-12 rounded-full">
+
+<div class="flex-1">
+<h4 class="font-bold text-slate-800">Vikas Kumar</h4>
+<p class="text-[11px] text-slate-500 font-bold">Ignored Employee</p>
+</div>
+
+<button class="bg-blue-600 text-white px-3 py-2 rounded-xl text-[11px] font-bold">Restore</button>
+
+</div>
+
+</div>
+</div>
+
+
+<div id="view-pending-review" class="hidden pb-40">
+    <div class="bg-white rounded-3xl border p-6 text-center mb-6">
+        <img id="review-emp-img" src="" class="w-20 h-20 rounded-full border-4 border-slate-50 mx-auto mb-3">
+        <h3 id="review-emp-name" class="font-black text-slate-800 text-xl tracking-tight"></h3>
+        
+        <div class="flex gap-3 mt-6">
+            <button onclick="processRequest('Declined')" class="flex-1 bg-slate-100 text-slate-600 py-4 rounded-2xl font-black text-xs uppercase tracking-widest">Ignore</button>
+            <button onclick="switchView('add-employee')" class="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-100">New Employee</button>
+        </div>
+    </div>
+
+    <div class="px-2 mb-4">
+        <h4 class="text-[11px] font-black text-slate-400 uppercase tracking-widest">Or Merge with Existing</h4>
+    </div>
+    
+    <div id="merge-employee-list" class="space-y-3">
+        </div>
+</div>
+
+<!-- EMPLOYEES TIME OFF -->
+
+<div id="view-timeoff" class="hidden pb-40">
+    <div class="overflow-x-auto scroll-hide mb-6 -mx-5 px-5">
+        <div id="timeoff-week"></div>
+    </div>
+
+    <div class="flex gap-2 mb-6 px-1 overflow-x-auto scroll-hide">
+        <button class="tof-filter bg-slate-900 text-white px-5 py-2.5 rounded-2xl text-[11px] font-bold shadow-md" onclick="filterTimeoff('all')">All</button>
+        <button class="tof-filter bg-white border border-slate-200 text-slate-500 px-5 py-2.5 rounded-2xl text-[11px] font-bold shadow-sm" onclick="filterTimeoff('pending')">Pending</button>
+        <button class="tof-filter bg-white border border-slate-200 text-slate-500 px-5 py-2.5 rounded-2xl text-[11px] font-bold shadow-sm" onclick="filterTimeoff('approved')">Approved</button>
+        <button class="tof-filter bg-white border border-slate-200 text-slate-500 px-5 py-2.5 rounded-2xl text-[11px] font-bold shadow-sm" onclick="filterTimeoff('declined')">Declined</button>
+    </div>
+
+    <div id="timeoff-list" class="space-y-4"></div>
+</div>
+
+<!-- AI Analytics View -->
+
+<div id="view-ai-analytics" class="hidden px-2 pb-20">
+    
+    <div class="bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm mb-6 mt-2">
+        <div class="flex justify-between items-start mb-4">
+            <div>
+                <h3 class="text-[18px] font-[900] text-slate-800 tracking-tight" style="font-family: 'Inter', sans-serif;">Schedule Health</h3>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">AI Generated Insights</p>
+            </div>
+            <div class="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[12px] font-black">92%</div>
+        </div>
+        
+        <div class="flex gap-4 items-center">
+            <div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div class="h-full bg-emerald-500 rounded-full" style="width: 92%"></div>
+            </div>
+            <span class="text-[10px] font-bold text-slate-500">Excellent</span>
+        </div>
+    </div>
+
+    <div class="overflow-x-auto flex gap-4 scroll-hide pb-4 mb-2" style="scroll-snap-type: x mandatory;">
+        
+        <div class="min-w-[85%] bg-slate-900 p-5 rounded-[32px] shadow-lg text-white" style="scroll-snap-align: center;">
+            <div class="flex justify-between items-center mb-6">
+                <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Labor Efficiency</span>
+                <i class="fas fa-chart-bar text-blue-400"></i>
+            </div>
+            <div class="flex items-end justify-between h-24 gap-2 mb-4">
+                <div class="w-full bg-slate-800 rounded-t-lg h-[40%]"></div>
+                <div class="w-full bg-slate-800 rounded-t-lg h-[70%]"></div>
+                <div class="w-full bg-blue-500 rounded-t-lg h-[95%]"></div>
+                <div class="w-full bg-slate-800 rounded-t-lg h-[60%]"></div>
+                <div class="w-full bg-slate-800 rounded-t-lg h-[80%]"></div>
+            </div>
+            <p class="text-[11px] text-slate-300 font-medium">Peak performance expected on <span class="text-white font-bold">Wednesday</span>.</p>
+        </div>
+
+        <div class="min-w-[85%] bg-white p-5 rounded-[32px] border border-slate-200 shadow-sm" style="scroll-snap-align: center;">
+            <div class="flex justify-between items-center mb-6">
+                <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Cost Saving AI Plan</span>
+                <i class="fas fa-coins text-amber-500"></i>
+            </div>
+            <div class="flex items-center gap-4 mb-4">
+                <div class="text-3xl font-black text-slate-800">$124</div>
+                <div class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-lg font-bold">Potential Saving</div>
+            </div>
+            <p class="text-[11px] text-slate-500 leading-tight">AI identified 3 over-staffed slots in morning shifts.</p>
+        </div>
+    </div>
+
+    <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3 px-2">Key Observations</h3>
+    <div class="space-y-3 px-1">
+        <div class="bg-white p-4 rounded-[24px] border border-slate-100 flex gap-4 items-center shadow-sm">
+            <div class="w-10 h-10 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center shrink-0">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <div class="flex-1">
+                <p class="text-[12px] font-black text-slate-800 tracking-tight">Understaffing Alert</p>
+                <p class="text-[10px] text-slate-500">Tue, 12PM-2PM: Gaps in Cashier position.</p>
+            </div>
+            <button class="text-blue-600 text-[10px] font-black uppercase">Fix</button>
+        </div>
+
+        <div class="bg-white p-4 rounded-[24px] border border-slate-100 flex gap-4 items-center shadow-sm">
+            <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center shrink-0">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <div class="flex-1">
+                <p class="text-[12px] font-black text-slate-800 tracking-tight">Overtime Optimization</p>
+                <p class="text-[10px] text-slate-500">Redistribute Anita's 4h to Rahul Verma.</p>
+            </div>
+            <button class="text-blue-600 text-[10px] font-black uppercase">Apply</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- Setting -->
+
+<div id="view-settings" class="hidden pb-10">
+    <div class="settings-card" onclick="switchView('profile-settings')">
+        <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+            <i class="fas fa-user-cog text-xl"></i>
+        </div>
+        <div class="flex-1">
+            <h4 class="font-bold text-slate-800 text-[15px]">Profile Settings</h4>
+            <p class="text-[11px] text-slate-400">Setup General, Privacy, and manage Password.</p>
+        </div>
+        <i class="fas fa-chevron-right text-slate-300"></i>
+    </div>
+
+    <div class="settings-card" onclick="switchView('notification-prefs')">
+        <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+            <i class="fas fa-bell text-xl"></i>
+        </div>
+        <div class="flex-1">
+            <h4 class="font-bold text-slate-800 text-[15px]">Notification Preferences</h4>
+            <p class="text-[11px] text-slate-400">Set up your Notification Preferences.</p>
+        </div>
+        <i class="fas fa-chevron-right text-slate-300"></i>
+    </div>
+
+    <div class="settings-card" onclick="switchView('language')">
+        <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+            <i class="fas fa-language text-xl"></i>
+        </div>
+        <div class="flex-1">
+            <h4 class="font-bold text-slate-800 text-[15px]">Language</h4>
+            <p class="text-[11px] text-slate-400">Select your preferred Language.</p>
+        </div>
+        <i class="fas fa-chevron-right text-slate-300"></i>
+    </div>
+</div>
+
+<div id="view-profile-settings" class="hidden pb-40">
+    <div class="bg-slate-800 rounded-[32px] p-6 text-center mb-6">
+        <div class="w-20 h-20 rounded-full bg-fuchsia-600 text-white flex items-center justify-center text-3xl font-bold mx-auto mb-3 border-4 border-slate-700">T</div>
+        <h3 class="text-white font-black text-xl">Test2</h3>
+        <p class="text-emerald-400 text-[10px] font-black uppercase tracking-widest">Account Admin</p>
+    </div>
+
+    <div class="space-y-4 px-1">
+        <div class="form-icon-wrap"><div class="flex-1"><label>Email ID</label><input value="test2@gmail.com" readonly></div><i class="fas fa-check-circle text-emerald-500"></i></div>
+        <div class="form-icon-wrap">
+            <div class="flex-1"><label>Phone Number</label>
+                <div class="flex items-center gap-2 mt-1">
+                    <img src="https://flagcdn.com/w20/in.png" class="w-4"> <span class="text-[13px] font-bold text-slate-700">+91 | 8855774488</span>
+                </div>
+            </div>
+            <i class="fas fa-check-circle text-emerald-500"></i>
+        </div>
+
+        <div class="bg-white p-5 rounded-[28px] border border-slate-100 shadow-sm mt-6">
+            <h5 class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4">My Privacy Settings</h5>
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-[13px] font-bold text-slate-600">Allow others to view contact info</span>
+                <div class="toggle-switch" onclick="this.classList.toggle('active')"><div class="toggle-circle"></div></div>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-[13px] font-bold text-slate-600">Enable Biometric Login</span>
+                <div class="toggle-switch active" onclick="this.classList.toggle('active')"><div class="toggle-circle"></div></div>
+            </div>
+        </div>
+
+        <button onclick="switchView('change-password')" class="w-full bg-white border border-slate-200 p-4 rounded-2xl flex justify-between items-center mt-4">
+            <span class="font-black text-slate-800 text-sm">Change Password</span>
+            <i class="fas fa-chevron-right text-slate-300"></i>
+        </button>
+    </div>
+    <div class="fixed-action-bar"><button onclick="processRequest('Approved')" class="flex-1 bg-emerald-500 text-white font-black py-4 rounded-2xl shadow-lg">SAVE SETTINGS</button></div>
+</div>
+
+<div id="view-change-password" class="hidden pb-40">
+    <div class="space-y-4">
+        <div class="form-icon-wrap"><div class="flex-1"><label>Old Password</label><input type="password" placeholder="Old Password"></div></div>
+        <div class="form-icon-wrap"><div class="flex-1"><label>New Password</label><input type="password" placeholder="New Password"></div></div>
+        <div class="form-icon-wrap"><div class="flex-1"><label>Confirm Password</label><input type="password" placeholder="Confirm Password"></div></div>
+        
+        <div class="bg-slate-100 p-5 rounded-3xl border border-slate-200">
+            <h6 class="text-[10px] font-black text-slate-500 uppercase mb-2">Password Guidelines:</h6>
+            <ul class="text-[11px] text-slate-500 space-y-1 leading-tight">
+                <li>• At least 8 characters long</li>
+                <li>• One uppercase & one lowercase letter</li>
+                <li>• At least one number (0-9)</li>
+                <li>• One special character (!@#$*)</li>
+            </ul>
+        </div>
+    </div>
+    <div class="fixed-action-bar"><button onclick="processRequest('Approved')" class="flex-1 bg-emerald-500 text-white font-black py-4 rounded-2xl shadow-lg">UPDATE PASSWORD</button></div>
+</div>
+
+<div id="view-notification-prefs" class="hidden pb-40">
+    <p class="text-[13px] font-bold text-slate-500 mb-4 px-2">When would you like to be notified?</p>
+    <div class="flex justify-end gap-6 mb-4 px-4">
+        <div class="text-center"><i class="fas fa-envelope text-blue-500 mb-1"></i><p class="text-[9px] font-black">EMAIL</p></div>
+        <div class="text-center"><i class="fas fa-bell text-blue-500 mb-1"></i><p class="text-[9px] font-black">PUSH</p></div>
+    </div>
+
+    <div class="space-y-6">
+        <div>
+            <h6 class="text-[11px] font-black text-slate-400 uppercase px-2 mb-3">Schedule Notifications</h6>
+            <div class="bg-white rounded-3xl border border-slate-100 overflow-hidden">
+                <div class="flex items-center justify-between p-4 border-b">
+                    <span class="text-xs font-bold text-slate-600">Schedule is published</span>
+                    <div class="flex gap-8"><input type="checkbox" checked class="w-5 h-5"><input type="checkbox" checked class="w-5 h-5"></div>
+                </div>
+                <div class="flex items-center justify-between p-4 border-b">
+                    <span class="text-xs font-bold text-slate-600">Time Off Approved/Declined</span>
+                    <div class="flex gap-8"><input type="checkbox" checked class="w-5 h-5"><input type="checkbox" checked class="w-5 h-5"></div>
+                </div>
+                <div class="flex items-center justify-between p-4">
+                    <span class="text-xs font-bold text-slate-600">Swap Shift Requested</span>
+                    <div class="flex gap-8"><input type="checkbox" class="w-5 h-5"><input type="checkbox" checked class="w-5 h-5"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="fixed-action-bar"><button onclick="processRequest('Approved')" class="flex-1 bg-emerald-500 text-white font-black py-4 rounded-2xl shadow-lg">SAVE PREFERENCES</button></div>
+</div>
+
+<div id="view-language" class="hidden pb-40">
+    <div class="space-y-3">
+        <div class="settings-card" onclick="selectLang(this)">
+            <img src="https://flagcdn.com/w40/us.png" class="w-8 rounded-sm">
+            <span class="flex-1 font-bold text-slate-700">English (US)</span>
+            <div class="lang-radio selected"></div>
+        </div>
+        <div class="settings-card" onclick="selectLang(this)">
+            <img src="https://flagcdn.com/w40/es.png" class="w-8 rounded-sm">
+            <span class="flex-1 font-bold text-slate-700">Español</span>
+            <div class="lang-radio"></div>
+        </div>
+        <div class="settings-card" onclick="selectLang(this)">
+            <img src="https://flagcdn.com/w40/fr.png" class="w-8 rounded-sm">
+            <span class="flex-1 font-bold text-slate-700">Français</span>
+            <div class="lang-radio"></div>
+        </div>
+    </div>
+    <div class="fixed-action-bar"><button onclick="processRequest('Approved')" class="flex-1 bg-emerald-500 text-white font-black py-4 rounded-2xl shadow-lg">SAVE LANGUAGE</button></div>
+</div>
+
+
+<!-- EMPLOYEE AVAILABILITY LIST -->
+
+<div id="view-availability" class="hidden pb-40">
+    <div class="px-1 mb-4">
+        <input id="availability-search" 
+               placeholder="Search employee..." 
+               class="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm shadow-sm outline-none focus:border-blue-400 transition-all" 
+               oninput="renderAvailability(this.value)">
+    </div>
+    
+    <div id="availability-employee-list" class="space-y-3"></div>
+</div>
+
+<!-- CLOUD LIBRARY -->
+
+<div id="view-cloud" class="hidden pb-40">
+    <div class="px-1 mb-6">
+        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Filter by Category</label>
+        <select id="cloud-category-filter" 
+                class="w-full bg-white border border-slate-200 rounded-2xl px-4 py-4 text-sm font-bold text-slate-700 shadow-sm outline-none appearance-none"
+                onchange="renderCloud()">
+            <option value="all">All Categories</option>
+            <option value="Forms">Forms</option>
+            <option value="Resources">Resources</option>
+            <option value="Templates">Templates</option>
+            <option value="Training Material">Training Material</option>
+            <option value="Others">Others</option>
+        </select>
+    </div>
+
+    <div id="cloud-list" class="space-y-8">
+        </div>
+
+    <div class="fixed-action-bar" id="cloud-bar">
+        <button onclick="openCloudUploadModal()" class="flex-1 bg-blue-600 text-white font-black py-4 rounded-3xl text-xs uppercase tracking-widest shadow-lg shadow-blue-100 active:scale-95 transition-all">
+            <i class="fas fa-plus mr-2"></i> Add New File
+        </button>
+    </div>
+</div>
+
+<!-- CONTACTS -->
+
+<div id="view-contacts" class="hidden pb-40">
+    <input placeholder="Search employee..." class="w-full border rounded-xl px-4 py-3 mb-4" oninput="renderContacts(this.value)">
+    <div id="contacts-list" class="space-y-3"></div>
+</div>
+
+<!-- BROADCAST -->
+
+<div id="view-broadcast" class="hidden pb-40">
+
+<input type="date" class="w-full border rounded-xl px-4 py-3 mb-4">
+
+<textarea id="broadcast-msg" class="w-full border rounded-xl p-4 mb-4"
+rows="4" placeholder="Write message..."></textarea>
+
+<div class="flex gap-3">
+    <button onclick="sendBroadcast('note')" class="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-black">Add Note</button>
+    <button onclick="sendBroadcast('broadcast')" class="flex-1 bg-violet-600 text-white py-4 rounded-2xl font-black">Broadcast</button>
+</div>
+
+<div class="mt-6 flex items-center justify-between bg-white p-4 rounded-2xl border">
+    <span class="font-bold text-sm">Restrict Time Off Request for the day</span>
+    <input type="checkbox" id="restrict-tof" class="w-5 h-5">
+</div>
+
+</div>
+
+<!-- CHITCHAT -->
+<div id="view-chitchat" class="hidden absolute inset-0 bg-white flex flex-col" style="z-index: 5;">
+    <div class="p-4 bg-white border-b border-slate-100">
+        <div class="bg-slate-100 rounded-2xl flex items-center px-4 py-2.5 mb-4">
+            <i class="fas fa-search text-slate-400 mr-2 text-xs"></i>
+            <input id="chat-search-input" type="text" placeholder="Search unread chats..." class="bg-transparent w-full text-sm outline-none font-medium" oninput="renderChitchatList()">
+        </div>
+        
+        <div class="flex items-center justify-between">
+            <div class="flex gap-2 overflow-x-auto scroll-hide">
+                <button id="tab-chat-all" onclick="setChatFilter('all')" class="bg-slate-900 text-white px-5 py-2 rounded-full text-[11px] font-bold">All</button>
+                <button id="tab-chat-groups" onclick="setChatFilter('groups')" class="bg-slate-100 text-slate-500 px-5 py-2 rounded-full text-[11px] font-bold">Groups</button>
+                <button id="tab-chat-unread" onclick="setChatFilter('unread')" class="bg-slate-100 text-slate-500 px-5 py-2 rounded-full text-[11px] font-bold">Unread</button>
+            </div>
+            <button onclick="alert('Feature coming soon: Create Group')" class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
+                <i class="fas fa-plus text-xs"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="chitchat-list-render" class="flex-1 overflow-y-auto px-2 pt-2 pb-24">
+        </div>
+</div>
+
+<div id="view-chatbox" class="hidden absolute inset-0 bg-slate-50 flex flex-col" style="z-index: 10000;">
+    <div class="bg-[#1e293b] text-white p-4 flex items-center gap-3">
+        <button onclick="goBack()" class="text-xl"><i class="fas fa-arrow-left"></i></button>
+        <div class="relative">
+            <img id="chat-user-img" class="w-10 h-10 rounded-full border border-white/20">
+            <span id="chat-user-status-dot" class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-[#1e293b] rounded-full"></span>
+        </div>
+        <div class="flex-1 min-w-0">
+            <h4 id="chat-user-name" class="font-bold text-sm truncate"></h4>
+            <p id="chat-user-status-text" class="text-[10px] text-emerald-400 font-bold uppercase">Online</p>
+        </div>
+        <div class="flex gap-4 text-white/70">
+            <i class="fas fa-video text-sm"></i>
+            <i class="fas fa-phone-alt text-sm"></i>
+        </div>
+    </div>
+
+    <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3" style="background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-size: contain; background-opacity: 0.1;">
+        </div>
+
+    <div class="p-3 bg-white flex items-center gap-2 border-t border-slate-200">
+        <div class="flex-1 bg-slate-100 rounded-full flex items-center px-4 py-1">
+            <i class="far fa-smile text-slate-400 text-lg mr-2"></i>
+            <input id="chat-input" type="text" placeholder="Type a message..." class="bg-transparent w-full py-2 text-sm outline-none">
+            <button onclick="openFileUpload()"><i class="fas fa-paperclip text-slate-400 -rotate-45 ml-2"></i></button>
+            <button onclick="openCamera()"><i class="fas fa-camera text-slate-400 ml-3"></i></button>
+        </div>
+        <button id="voice-btn" class="w-11 h-11 bg-[#2563eb] text-white rounded-full flex items-center justify-center shadow-md active:scale-90 transition-all">
+            <i class="fas fa-microphone"></i>
+        </button>
+        <button id="send-btn" onclick="sendChatMessage()" class="hidden w-11 h-11 bg-[#2563eb] text-white rounded-full flex items-center justify-center shadow-md">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </div>
+</div>
+
+<!-- SUPPORT -->
+<div id="view-support" class="hidden pb-40">
+
+    <div class="bg-white p-5 rounded-3xl border mb-6">
+        <h3 class="font-black mb-3">Raise Ticket</h3>
+
+        <select id="support-category" class="w-full border rounded-xl px-4 py-3 mb-3">
+            <option>Technical Issue</option>
+            <option>Scheduling Problem</option>
+            <option>Account Issue</option>
+            <option>Other</option>
+        </select>
+
+        <textarea id="support-msg" rows="4"
+        class="w-full border rounded-xl p-4 mb-3"
+        placeholder="Describe your issue..."></textarea>
+
+        <button onclick="submitTicket()"
+        class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black">
+            Submit Ticket
+        </button>
+    </div>
+
+    <div>
+        <h4 class="font-bold mb-3">Previous Tickets</h4>
+        <div id="ticket-list" class="space-y-3"></div>
+    </div>
+
+</div>
+
+
+
+<!-- SHARED DEVICE -->
+<div id="view-shared" class="hidden pb-40">
+
+    <div class="bg-white p-6 rounded-3xl border text-center">
+        <h3 class="text-lg font-black mb-4">Shared Device Mode</h3>
+
+        <p class="text-sm text-slate-500 mb-6">
+            This device will become shared and employees can login using PIN.
+        </p>
+
+        <button onclick="toggleSharedMode()" 
+        class="bg-violet-600 text-white px-6 py-4 rounded-2xl font-black">
+            Toggle Shared Mode
+        </button>
+
+        <p id="shared-status" class="mt-4 text-sm font-bold text-slate-600">
+            Mode: OFF
+        </p>
+    </div>
+
+</div>
+
+
+
+<!-- Schedule Action Bar -->
+<div id="schedule-bar" class="fixed-action-bar hidden">
+    <button onclick="processRequest('Approved')"
+        class="flex-1 bg-emerald-600 text-white font-black py-4 rounded-2xl text-[10px] uppercase">
+        Publish
+    </button>
+
+    <button onclick="showCreateShiftModal()"
+        class="flex-1 bg-blue-600 text-white font-black py-4 rounded-2xl text-[10px] uppercase">
+        Add Shift
+    </button>
+</div>
+
+<!-- Assign Shift Action Bar -->
+<div id="assign-bar" class="fixed-action-bar hidden">
+    <button onclick="confirmAssignEmployee()"
+        class="flex-1 bg-blue-600 text-white font-black py-4 rounded-2xl text-[11px] uppercase shadow-lg">
+        Assign Shift
+    </button>
+</div>
+
+<!-- Unassigned Action Bar -->
+<div id="unassigned-bar" class="fixed-action-bar hidden">
+    <button onclick="showCreateUnassignedModal()"
+        class="flex-1 bg-emerald-500 text-white font-black py-4 rounded-2xl text-[11px] uppercase shadow-lg">
+        Create Unassigned Shift
+    </button>
+</div>
+<div id="edit-employee-bar" class="fixed-action-bar hidden">
+    <button
+    class="flex-1 bg-emerald-500 text-white font-black py-4 rounded-2xl shadow-lg">
+        Update Employee
+    </button>
+</div>
+<div id="add-employee-bar" class="fixed-action-bar hidden">
+    <button
+    class="flex-1 bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg">
+        Create Employee
+    </button>
+</div>
+
+    </div>
+
+    <!-- Fixed Action Bar (Schedule) -->
+    
+	<!-- Sidebar Drawer -->
+
+
+
+	</div>
+<div id="employee-bottom-nav" class="bottom-nav hidden">
+
+<button onclick="openEmployeeScreen('employees')" class="flex flex-col items-center gap-1 tab-active">
+<i class="fas fa-users text-xl nav-icon"></i>
+<span class="text-[10px] font-bold uppercase">Employees</span>
+</button>
+
+<button onclick="openEmployeeScreen('emp-pending')" class="flex flex-col items-center gap-1 text-slate-400">
+<i class="fas fa-user-clock text-xl nav-icon"></i>
+<span class="text-[10px] font-bold uppercase">Pending</span>
+</button>
+
+<button onclick="openEmployeeScreen('emp-ignored')" class="flex flex-col items-center gap-1 text-slate-400">
+<i class="fas fa-user-slash text-xl nav-icon"></i>
+<span class="text-[10px] font-bold uppercase">Ignored</span>
+</button>
+
+</div>
+    <!-- Bottom Nav -->
+ <div id="bottom-nav" class="bottom-nav">
+ 
+        <button onclick="switchView('dashboard')" id="nav-dashboard" class="flex flex-col items-center gap-1 tab-active">
+            <i class="fas fa-home text-xl nav-icon"></i><span class="text-[10px] font-bold uppercase">Requests</span>
+        </button>
+        <button onclick="switchView('schedule')" id="nav-schedule" class="flex flex-col items-center gap-1 text-slate-400">
+            <i class="far fa-calendar-alt text-xl nav-icon"></i><span class="text-[10px] font-bold uppercase">Schedule</span>
+        </button>
+        <button onclick="switchView('unassigned')" id="nav-unassigned" class="flex flex-col items-center gap-1 text-slate-400">
+           <i class="fas fa-user-slash text-xl nav-icon"></i><span class="text-[10px] font-bold uppercase">Unassigned</span>
+        </button>
+    </div>
+
+    <!-- Add Shift Modal -->
+    <div id="modal-container" class="modal-overlay" onclick="hideModal()">
+        <div class="modal-content relative animate-slide-up" onclick="event.stopPropagation()">
+            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6"></div>
+            <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight mb-8 px-2">Add New Shift</h3>
+            
+            <div id="modal-body" class="space-y-5 flex-1 overflow-y-auto" style="padding: 0 4px 30px 0; margin-right: -4px;">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-icon-wrap">
+                        <i class="far fa-calendar-alt text-blue-500"></i>
+                        <div class="flex-1"><label>Select Date</label><input type="date" value="2026-02-24"></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="form-icon-wrap px-3"><div class="flex-1"><label>Start</label><input type="time" value="09:00"></div></div>
+                        <div class="form-icon-wrap px-3"><div class="flex-1"><label>End</label><input type="time" value="17:00"></div></div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-icon-wrap">
+                        <i class="fas fa-user-plus text-emerald-500"></i>
+                        <div class="flex-1"><label>Employee</label><select id="employee-dropdown"></select></div>
+                    </div>
+                    <div class="form-icon-wrap">
+                        <i class="fas fa-briefcase text-orange-500"></i>
+                        <div class="flex-1">
+                            <label>Position</label>
+                            <select id="position-dropdown">
+                                <option>Crew</option>
+                                <option>Trainer</option>
+                                <option>Cook</option>
+                                <option>Lead</option>
+                                <option>Manager</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-slate-50/80 p-5 rounded-[32px] border border-slate-100">
+                    <label class="text-[10px] font-black text-slate-400 uppercase block mb-4">Breaks</label>
+					<div class="form-icon-wrap mb-4">
+    <i class="fas fa-coffee text-amber-500"></i>
+    <div class="flex-1">
+        <label>Break Type</label>
+        <select id="break-type">
+            <option>Rest</option>
+            <option>Meal</option>
+        </select>
+    </div>
+</div>
+                    <div class="flex items-center gap-2 mb-5">
+                        <div class="form-icon-wrap flex-1 px-3"><div class="flex-1"><label>Start</label><input type="time" id="break-start" value="12:00"></div></div>
+                        <div class="form-icon-wrap flex-1 px-3"><div class="flex-1"><label>End</label><input type="time" id="break-end" value="12:30"></div></div>
+                        <button onclick="addBreakToShift()" class="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center shrink-0 shadow-md"><i class="fas fa-plus"></i></button>
+                    </div>
+                    <div id="modal-break-list" class="space-y-2"></div>
+                </div>
+<div style="
+    position: sticky;
+    bottom: 0;
+    left: -20px;
+    right: -20px;
+    margin: 0 -20px;
+    padding: 16px 20px 32px; /* Safety buffer for bottom nav */
+    background: white;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    gap: 12px;
+    z-index: 50;
+">
+    <button class="flex-1 bg-slate-100 text-slate-600 font-black py-4 rounded-2xl" onclick="hideModal()">Cancel</button>
+    <button class="flex-1 bg-emerald-500 text-white font-black py-4 rounded-2xl shadow-lg" onclick="processRequest('Approved')">Create & Publish</button>
+</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Modal -->
+<div id="status-modal" class="modal-overlay" style="align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="bg-white rounded-[42px] p-10 w-[280px] relative z-[9999] text-center shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] transform scale-90 transition-all duration-300" id="status-card">
+        <div id="modal-icon-container" class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 transition-all duration-500">
+            <i id="modal-icon-symbol" class="fas text-3xl"></i>
+        </div>
+        <h3 id="modal-text" class="text-xl font-black text-slate-800 tracking-tight mb-2"></h3>
+        <p id="modal-subtext" class="text-sm text-slate-400 font-medium"></p>
+    </div>
+</div>
+
+<div id="cloud-upload-modal" class="modal-overlay" onclick="hideCloudModal()">
+    <div class="modal-content relative" onclick="event.stopPropagation()">
+        <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6"></div>
+        <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight mb-6">Upload to Cloud</h3>
+        
+        <div class="space-y-5 pb-10">
+            <div class="form-icon-wrap">
+                <i class="fas fa-tag text-blue-500"></i>
+                <div class="flex-1">
+                    <label>Select Category</label>
+                    <select id="upload-category" class="font-bold">
+                        <option>Forms</option>
+                        <option>Resources</option>
+                        <option>Templates</option>
+                        <option>Training Material</option>
+                        <option>Others</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-icon-wrap items-start pt-3">
+                <i class="fas fa-align-left text-slate-400 mt-1"></i>
+                <div class="flex-1">
+                    <label>Description</label>
+                    <textarea id="upload-desc" class="w-full bg-transparent border-none outline-none text-sm font-bold text-slate-700 min-h-[100px] resize-none" placeholder="Enter file details..."></textarea>
+                </div>
+            </div>
+
+            <div onclick="triggerFileUpload()" class="border-2 border-dashed border-slate-200 rounded-[32px] p-8 text-center bg-slate-50 cursor-pointer active:bg-slate-100 transition-all">
+                <i class="fas fa-cloud-upload-alt text-3xl text-blue-500 mb-2"></i>
+                <p class="text-sm font-bold text-slate-600" id="file-name-display">Click to select file</p>
+                <input type="file" id="real-file-input" class="hidden" onchange="handleFileSelection(event)">
+            </div>
+
+            <div class="flex gap-3 pt-4">
+                <button class="flex-1 bg-slate-100 text-slate-600 font-black py-4 rounded-2xl" onclick="hideCloudModal()">Cancel</button>
+                <button class="flex-1 bg-emerald-500 text-white font-black py-4 rounded-2xl shadow-lg" onclick="saveToCloud()">Save File</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="modal-overlay" onclick="hideConfirmation()" style="align-items: center; justify-content: center; padding: 20px;">
+        <div class="bg-white rounded-[40px] p-8 w-full max-w-[320px] relative z-[1200] text-center shadow-2xl scale-95 transition-transform" onclick="event.stopPropagation()">
+            <div class="w-16 h-16 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center mx-auto mb-4 text-2xl"><i class="fas fa-question"></i></div>
+            <h3 class="text-lg font-black text-slate-800 tracking-tight mb-2">Are you sure?</h3>
+            <p id="confirmation-msg" class="text-xs text-slate-400 mb-8 leading-relaxed"></p>
+            <div class="flex gap-3">
+                <button onclick="hideConfirmation()" class="flex-1 bg-slate-100 text-slate-500 font-black py-4 rounded-2xl text-[10px] uppercase tracking-widest">No</button>
+                <button id="btn-confirm-yes" class="flex-1 bg-slate-900 text-white font-black py-4 rounded-2xl shadow-lg text-[10px] uppercase tracking-widest">Yes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trend Max Modal -->
+ <div id="trend-maximize-modal" class="modal-overlay" onclick="hideMaximizeTrend()" style="align-items: center; justify-content: center; padding: 20px;">
+    <div class="bg-white rounded-[40px] p-6 w-full max-w-[400px] relative shadow-2xl" onclick="event.stopPropagation()">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-black text-slate-800 uppercase">Trending Hours</h3>
+            <button onclick="hideMaximizeTrend()" class="text-slate-400 text-2xl p-2">&times;</button>
+        </div>
+        <div class="bg-blue-50/50 p-6 rounded-[32px] border border-blue-100">
+            <div class="flex flex-col">
+                <div class="min-h-[220px] flex items-end">
+                    <div class="flex flex-col justify-between text-[10px] text-slate-400 font-bold pr-3 h-[180px]"><span>100</span><span>50</span><span>0</span></div>
+                    <div class="flex-1 relative h-[180px] border-l border-b border-slate-200" id="max-graph-container"></div>
+                </div>
+                <div id="max-x-axis-container"></div>
+                <div id="max-legend-container" class="mt-4"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<script>
+	let navigationStack = [];
+	let isGoingBack = false;
+	let selectionMode = false;
+	let selectedShifts = [];
+    const allEmployees = [
+        { name: "Mark Andrew", img: "31", pos: "Store Manager" },
+        { name: "Anita Roy", img: "32", pos: "Cashier" },
+        { name: "David Smith", img: "33", pos: "Line Cook" },
+        { name: "Sarah Jenkins", img: "34", pos: "Shift Lead" },
+        { name: "Jose Ramirez", img: "35", pos: "Team Lead" },
+        { name: "Luis Martinez", img: "12", pos: "Floor Help" },
+        { name: "Marcos Delgado", img: "11", pos: "Support" }
+    ];
+
+    let currentActionType = 'Time Off';
+    let currentActionTab = 'Needing';
+    let modalBreaks = [];
+    let currentTrendMode = 'today';
+    let activeShiftMode = 'upcoming';
+
+    const availData = {
+        'Early Morning': ['12a-1a', '1a-2a', '2a-3a', '3a-4a', '4a-5a', '5a-6a', '6a-7a', '7a-8a'],
+        'Morning': ['8a-9a', '9a-10a', '10a-11a'],
+        'Afternoon': ['11a-12p', '12p-1p', '1p-2p', '2p-3p', '3p-4p'],
+        'Evening': ['4p-5p', '5p-6p', '6p-7p'],
+        'Night': ['7p-8p', '8p-9p', '9p-10p', '10p-11p', '11p-12a']
+    };
+
+    // --- Core Action Logic logic ---
+function openActionDetail(type) {
+
+    // IMPORTANT: remember from where user came
+	if(type === 'Available Shifts') {
+        switchView('available-shifts-list');
+        setAvailShiftsTab('Needing');
+        return;
+    }
+    currentActionType = type;
+    switchView('action-list');
+    setActionTab('Needing');
+}
+
+    function setActionTab(tab) {
+        currentActionTab = tab;
+        document.getElementById('tab-needing').className = `action-tab-btn ${tab === 'Needing' ? 'active' : 'inactive'}`;
+        document.getElementById('tab-awaiting').className = `action-tab-btn ${tab === 'Awaiting' ? 'active' : 'inactive'}`;
+        
+        const list = document.getElementById('dynamic-action-list');
+        const type = currentActionType;
+        const badge = document.getElementById('action-count-badge');
+        let html = "";
+
+        if(tab === 'Needing') {
+            if(type === 'Time Off') {
+                const items = [
+                    {name: 'Marcos Delgado', img: '11', date: 'Feb 20', time: 'All Day', reason: 'Personal work at home'},
+                    {name: 'Luis Martinez', img: '12', date: 'Feb 22', time: '08:00A - 12:00P', reason: 'Doctor Appointment'},
+                    {name: 'Anita Roy', img: '13', date: 'Feb 24', time: 'All Day', reason: 'Family Function'}
+                ];
+                badge.innerText = items.length + " Pending";
+                html = items.map(it => `<div class="bg-white p-5 rounded-[32px] border flex items-start gap-4 shadow-sm"><img src="https://i.pravatar.cc/100?img=${it.img}" class="w-12 h-12 rounded-full object-cover shrink-0"><div class="flex-1"><h4 class="font-bold text-slate-800 text-sm truncate">${it.name}</h4><p class="text-[11px] font-bold text-blue-600 mt-0.5">${it.date} • ${it.time}</p><p class="text-[11px] text-slate-500 mt-1">Reason: ${it.reason}</p></div>
+				<div class="flex gap-2 shrink-0">
+
+<button onclick="askConfirmation('Time Off', 'Approved')" 
+class="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs shadow-sm">
+<i class="fas fa-check"></i>
+</button>
+
+<button onclick="askConfirmation('Time Off', 'Declined')" 
+class="w-9 h-9 rounded-full bg-red-500 text-white flex items-center justify-center text-xs shadow-sm">
+<i class="fas fa-times"></i>
+</button>
+
+</div>
+				</div>`).join('');
+            } else if(type === 'Swap Shift') {
+                const items = [
+                    {from:'Jose R.', fS: '08A-04P', to:'Mark A.', tS: '10A-06P', fI:'11', tI:'31', date:'Feb 22', r: 'Morning event.'},
+                    {from:'Anita R.', fS: '10A-06P', to:'Sarah J.', tS: '08A-04P', fI:'13', tI:'34', date:'Feb 23', r: 'Emergency visit.'}
+                ];
+                badge.innerText = items.length + " Pending";
+                html = items.map(it => `
+<div class="bg-white p-5 rounded-[32px] border shadow-sm space-y-4">
+
+<div class="flex items-center justify-between">
+
+<div class="text-center w-[42%]">
+<img src="https://i.pravatar.cc/100?img=${it.fI}" class="w-12 h-12 rounded-full mx-auto mb-1">
+<p class="text-[11px] font-bold text-slate-800">${it.from}</p>
+<p class="text-[10px] text-blue-600 font-bold">${it.fS}</p>
+<p class="text-[10px] text-slate-400">Position: Crew</p>
+</div>
+
+<i class="fas fa-arrow-right text-slate-300 text-lg"></i>
+
+<div class="text-center w-[42%]">
+<img src="https://i.pravatar.cc/100?img=${it.tI}" class="w-12 h-12 rounded-full mx-auto mb-1">
+<p class="text-[11px] font-bold text-slate-800">${it.to}</p>
+<p class="text-[10px] text-emerald-600 font-bold">${it.tS}</p>
+<p class="text-[10px] text-slate-400">Position: Crew</p>
+</div>
+
+</div>
+
+<div class="flex gap-2">
+<button onclick="askConfirmation('Swap Shift','Approved')" 
+class="flex-1 bg-emerald-600 text-white py-3 rounded-xl text-[10px] font-black uppercase">
+<i class="fas fa-check mr-1"></i> Accept
+</button>
+
+<button onclick="askConfirmation('Swap Shift','Declined')" 
+class="flex-1 bg-red-500 text-white py-3 rounded-xl text-[10px] font-black uppercase">
+<i class="fas fa-times mr-1"></i> Decline
+</button>
+</div>
+
+</div>
+`).join('');
+            } else if(type === 'Availability') {
+                const items = [{name: 'Sarah Jenkins', img: '34', date: 'New Request', detail: 'Mon-Fri Availability Update'}, {name: 'Mark Andrew', img: '31', date: 'New Request', detail: 'Weekend Preference Change'}];
+                badge.innerText = items.length + " Pending";
+                html = items.map(it => `<div onclick="openAvailabilityGrid('${it.name}', '${it.img}')" class="bg-white p-5 rounded-[32px] border flex items-center gap-4 active:scale-[0.98] transition-all cursor-pointer shadow-sm"><img src="https://i.pravatar.cc/100?img=${it.img}" class="w-12 h-12 rounded-full object-cover shrink-0"><div class="flex-1 min-w-0"><h4 class="font-bold text-slate-800 text-sm truncate">${it.name}</h4><p class="text-[11px] font-bold text-blue-600 mt-0.5">${it.date}</p><p class="text-[11px] text-slate-400 mt-0.5">${it.detail}</p></div><i class="fas fa-chevron-right text-slate-300 text-sm"></i></div>`).join('');
+            } else if(type === 'Available Shifts') {
+                const items = [{pos:'Line Cook',time:'10:00A-06:00P',img:'utensils',date:'Feb 24'}, {pos:'Cashier',time:'08:00A-04:00P',img:'cash-register',date:'Feb 25'}];
+                badge.innerText = items.length + " Pending";
+                html = items.map(it => `<div class="bg-white p-4 rounded-[32px] border flex items-center gap-4 shadow-sm"><div class="w-11 h-11 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 shrink-0"><i class="fas fa-${it.img}"></i></div><div class="flex-1 min-w-0"><h4 class="font-bold text-slate-800 text-sm truncate">${it.pos}</h4><p class="text-[10px] text-slate-400 font-bold uppercase">${it.date} • ${it.time}</p></div><button onclick="askConfirmation('Available Shift', 'Approved')" class="bg-blue-600 text-white text-[10px] font-black px-4 py-2 rounded-xl active:scale-90">Offer</button></div>`).join('');
+            }
+        } else {
+            // Awaiting Data Restore logic
+            const awaitingData = {
+               'Time Off': [
+    {title: 'Family Vacation', d: 'Mar 10-15 • All Day', s: 'In Review'},
+    {title: 'Doc Appt', d: 'Mar 18 • 09:00A - 01:00P', s: 'Awaiting Response'}
+],
+                'Swap Shift': [
+{title: 'Swap with David', d: 'Feb 28 • 10A-06P • Cook', s: 'Pending'},
+{title: 'Offer to Luis', d: 'Mar 02 • 08A-04P • Cashier', s: 'Reviewing'}
+],
+                'Availability': [{title: 'Night Shift Pref', d: 'Mon-Fri', s: 'Processing'}, {title: 'Weekend Off', d: 'Sat-Sun', s: 'Pending'}],
+                'Available Shifts': [{title: 'Floor Lead', d: 'Feb 28', s: 'Requested'}, {title: 'Support Role', d: 'Mar 05', s: 'Pending'}]
+            };
+            const items = awaitingData[type] || [];
+            badge.innerText = items.length + " Sent";
+            html = items.map(it => `<div class="bg-white p-5 rounded-[32px] border border-slate-100 shadow-sm flex flex-col gap-2 opacity-90"><div><h4 class="font-bold text-slate-800 text-sm">${it.title}</h4><p class="text-[11px] font-bold text-blue-600 mt-0.5">${it.d}</p></div><div class="flex items-center gap-2 mt-2"><div class="w-2 h-2 bg-amber-400 rounded-full"></div><span class="text-[10px] font-black text-amber-600 uppercase tracking-widest">${it.s}</span></div></div>`).join('');
+        }
+        list.innerHTML = html;
+    }
+
+    // Availability Helper logic
+function openAvailabilityGrid(name, img) {
+
+    // So back returns to Requests list
+
+    document.getElementById('avail-grid-emp-name').innerText = name;
+        document.getElementById('avail-grid-emp-img').src = `https://i.pravatar.cc/100?img=${img}`;
+        const container = document.getElementById('avail-sections-container');
+        container.innerHTML = '';
+        Object.keys(availData).forEach(section => {
+            const row = document.createElement('div');
+            row.className = 'avail-grid-row';
+            row.innerHTML = `<span class="text-[11px] font-bold text-slate-600 pl-1 flex items-center gap-1">${section} <i class="fas fa-chevron-down text-[8px] text-slate-400"></i></span><span><div class="avail-square avail-pending"></div></span><span><div class="avail-square avail-dark"></div></span><span><div class="avail-square avail-pending"></div></span><span><div class="avail-square avail-green"></div></span><span><div class="avail-square avail-pending"></div></span><span><div class="avail-square avail-pending"></div></span><span><div class="avail-square avail-pending"></div></span>`;
+            row.onclick = () => toggleAvailSection(section, row);
+            container.appendChild(row);
+            const subRows = document.createElement('div');
+            subRows.id = `sub-${section.replace(' ', '-')}`; subRows.className = 'hidden';
+            availData[section].forEach(hour => {
+                const subRow = document.createElement('div'); subRow.className = 'avail-sub-row';
+                subRow.innerHTML = `<span class="text-[9px] font-medium text-slate-400 pl-3">${hour}</span><span><div class="avail-square avail-pending scale-75"></div></span><span><div class="avail-square avail-dark scale-75"></div></span><span><div class="avail-square avail-pending scale-75"></div></span><span><div class="avail-square avail-green scale-75"></div></span><span><div class="avail-square avail-pending scale-75"></div></span><span><div class="avail-square avail-pending scale-75"></div></span><span><div class="avail-square avail-pending scale-75"></div></span>`;
+                subRows.appendChild(subRow);
+            });
+            container.appendChild(subRows);
+        });
+        if(document.getElementById('view-availability-grid').classList.contains('hidden')){
+    switchView('availability-grid');
+}
+    }
+    function toggleAvailSection(section, rowEl) {
+        const subRows = document.getElementById(`sub-${section.replace(' ', '-')}`);
+        const icon = rowEl.querySelector('i');
+        if(subRows.classList.contains('hidden')) { subRows.classList.remove('hidden'); icon.className = 'fas fa-chevron-up text-[8px] text-slate-400'; }
+        else { subRows.classList.add('hidden'); icon.className = 'fas fa-chevron-down text-[8px] text-slate-400'; }
+    }
+
+    // Chart logic logic
+function toggleTrend(mode) {
+        currentTrendMode = mode;
+        const container = document.getElementById('graph-container');
+        const xAxis = document.getElementById('x-axis-labels');
+        document.getElementById('btn-today').className = mode === 'today' ? "toggle-btn-active px-3 py-1 text-[9px] font-bold rounded-md transition-all" : "px-3 py-1 text-[9px] font-bold text-slate-500 rounded-md transition-all";
+        document.getElementById('btn-weekly').className = mode === 'weekly' ? "toggle-btn-active px-3 py-1 text-[9px] font-bold rounded-md transition-all ml-1" : "px-3 py-1 text-[9px] font-bold text-slate-500 rounded-md transition-all ml-1";
+        
+        const createPath = (pts) => pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${100 - p.b}`).join(' ');
+        // Today View: Max Y is 100, so b = v
+        // Weekly View: Max Y is 150 (adjusted for 110-120 range), b = (v / 150) * 100
+        const yLabels = document.getElementById('y-axis-labels');
+        let forPts, schPts;
+
+        if (mode === 'today') {
+            yLabels.innerHTML = '<span>100</span><span>50</span><span>0</span>';
+            // Scale: 0-100, so b = v
+            forPts = [{x:0,b:32,v:32},{x:25,b:52,v:52},{x:50,b:28,v:28},{x:75,b:68,v:68},{x:100,b:42,v:42}];
+            schPts = [{x:0,b:25,v:25},{x:25,b:45,v:45},{x:50,b:10,v:10},{x:75,b:55,v:55},{x:100,b:30,v:30}];
+        } else {
+            yLabels.innerHTML = '<span>200</span><span>100</span><span>0</span>';
+            // Scale: 0-200, so b = v / 2
+            forPts = [{x:0,b:55,v:110},{x:16,b:60,v:120},{x:33,b:45,v:90},{x:50,b:56,v:112},{x:66,b:47.5,v:95},{x:83,b:52.5,v:105},{x:100,b:44,v:88}];
+            schPts = [{x:0,b:50,v:100},{x:16,b:55,v:110},{x:33,b:42.5,v:85},{x:50,b:50,v:100},{x:66,b:40,v:80},{x:83,b:47.5,v:95},{x:100,b:37.5,v:75}];
+        }
+        
+        xAxis.innerHTML = mode === 'today' ? 
+            '<span class="text-[8px] text-slate-500 font-black">4A</span><span class="text-[8px] text-slate-500 font-black">8A</span><span class="text-[8px] text-slate-500 font-black">12P</span><span class="text-[8px] text-slate-500 font-black">4P</span><span class="text-[8px] text-slate-500 font-black">8P</span><span class="text-[8px] text-slate-500 font-black">12A</span>' : 
+            '<span class="text-[8px] text-slate-500 font-black">M</span><span class="text-[8px] text-slate-500 font-black">T</span><span class="text-[8px] text-slate-500 font-black">W</span><span class="text-[8px] text-slate-500 font-black">T</span><span class="text-[8px] text-slate-500 font-black">F</span><span class="text-[8px] text-slate-500 font-black">S</span><span class="text-[8px] text-slate-500 font-black">S</span>';
+
+        let dots = "";
+        forPts.forEach((p, i) => { 
+            const val = schPts[i] ? `<span class="text-blue-600">${p.v}</span><span class="text-slate-400 mx-0.5">/</span><span class="text-emerald-600">${schPts[i].v}</span>` : `<span class="text-blue-600">${p.v}</span>`; 
+            dots += `<div class="dot" style="left: ${p.x}%; bottom: ${p.b}%; z-index: 50;"><span class="dot-value" style="top: -24px; font-size: 9px; padding: 2px 6px; border-radius: 6px; background: rgba(255,255,255,0.9);">${val}</span></div>`; 
+        });
+
+        container.innerHTML = `<svg class="trend-svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="${createPath(forPts)}" fill="none" stroke="#3b82f6" stroke-width="1.5"/><path d="${createPath(schPts)}" fill="none" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4"/></svg>${dots}`;
+        document.getElementById('val-sch').innerText = mode === 'today' ? '58.5h' : '730h';
+        document.getElementById('val-act').innerText = mode === 'today' ? '42.2h' : '645h';
+    }
+
+function toggleShiftList(mode) {
+    activeShiftMode = mode;
+    
+    const container = document.getElementById('shift-list-container');
+    if (!container) return; 
+    
+    const btnUpcoming = document.getElementById('btn-upcoming');
+    const btnCurrent = document.getElementById('btn-current');
+    
+    btnUpcoming.classList.remove('active');
+    btnCurrent.classList.remove('active');
+    
+    if (mode === 'upcoming') {
+        btnUpcoming.classList.add('active');
+    } else {
+        btnCurrent.classList.add('active');
+    }
+    let data = mode === 'upcoming' ? allEmployees.slice(2, 7) : allEmployees.slice(0, 2);
+    
+    container.innerHTML = data.map(emp => `
+        <div class="bg-white p-4 rounded-3xl border border-slate-100 flex items-center gap-4 shadow-sm animate-fade-in">
+            <img src="https://i.pravatar.cc/100?img=${emp.img}" class="w-11 h-11 rounded-full object-cover shrink-0">
+            <div class="flex-1 min-w-0">
+                <h4 class="font-bold text-slate-800 text-sm truncate">${emp.name}</h4>
+                <p class="text-[10px] text-blue-500 font-bold uppercase tracking-tight">${emp.pos}</p>
+            </div>
+            <div class="text-right">
+                <p class="text-xs font-black text-slate-700">${mode === 'upcoming' ? '04:00P-10:00P' : 'Active'}</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+    // View Management logic
+function switchView(view){
+// --- navigation history tracking ---
+const current = document.querySelector('[id^="view-"]:not(.hidden)');
+
+if(current && !isGoingBack){
+    const currentView = current.id.replace('view-','');
+
+    // prevent duplicate pushes
+    if(currentView !== view && navigationStack[navigationStack.length-1] !== currentView){
+        navigationStack.push(currentView);
+    }
+}
+const views = [
+    'dashboard',
+	'ai-analytics',
+    'schedule',
+    'unassigned',
+    'assign-shift',
+    'action-list',
+    'availability-grid',
+    'employees',
+    'emp-pending',
+    'emp-ignored',
+    'pending-review', // Add this here if it's missing from the array
+    'timeoff',
+    'availability',
+    'cloud',
+    'contacts',
+    'broadcast',
+    'chitchat',
+    'shared',
+    'support',
+    'chatbox',
+    'edit-employee',
+    'add-employee',
+	'available-shifts-list', 
+	'available-shift-detail',
+	'support',
+	'support-add',
+	'support-detail',
+	'settings', 
+	'profile-settings', 
+	'change-password',
+	'notification-prefs',
+	'language'
+];
+
+    views.forEach(v => {
+        const el = document.getElementById('view-' + v);
+        if (el) el.classList.add('hidden');
+    });
+	
+
+    document.getElementById('view-' + view).classList.remove('hidden');
+
+    document.getElementById('header-back')
+        .classList.toggle('hidden', view === 'dashboard');
+
+    document.getElementById('header-brand')
+        .classList.toggle('hidden', view !== 'dashboard');
+	const empNav = document.getElementById('employee-bottom-nav');
+const homeNav = document.getElementById('bottom-nav');
+// bottom navigation highlighting
+document.querySelectorAll('#bottom-nav button').forEach(btn=>{
+    btn.classList.remove('tab-active');
+});
+
+if(view==='dashboard') document.getElementById('nav-dashboard').classList.add('tab-active');
+if(view==='schedule') document.getElementById('nav-schedule').classList.add('tab-active');
+if(view==='unassigned') document.getElementById('nav-unassigned').classList.add('tab-active');
+
+// employee screens detection
+const employeeScreens = [
+'employees',
+'emp-pending',
+'emp-ignored'
+];
+const homeScreens = ['dashboard', 'schedule', 'unassigned'];
+
+if (employeeScreens.includes(view)) {
+    // Show Employee Nav, Hide Home Nav
+    empNav.classList.remove('hidden');
+    homeNav.classList.add('hidden');
+} else if (homeScreens.includes(view)) {
+    // Show Home Nav, Hide Employee Nav
+    empNav.classList.add('hidden');
+    homeNav.classList.remove('hidden');
+} else {
+    // IMPORTANT: Hide BOTH nav bars for all other screens (Time Off, Contacts, etc.)
+    empNav.classList.add('hidden');
+    homeNav.classList.add('hidden');
+}
+	// ----- Schedule Action Bar Control -----
+const scheduleBar = document.getElementById('schedule-bar');
+
+if(view === 'schedule'){
+    scheduleBar.classList.remove('hidden');
+}else{
+    scheduleBar.classList.add('hidden');
+}
+	// Hide all action bars first
+// Hide all action footers
+document.getElementById('schedule-bar').classList.add('hidden');
+document.getElementById('assign-bar').classList.add('hidden');
+document.getElementById('unassigned-bar').classList.add('hidden');
+document.getElementById('edit-employee-bar').classList.add('hidden');
+document.getElementById('add-employee-bar').classList.add('hidden');
+if(view==='edit-employee'){
+    document.getElementById('edit-employee-bar').classList.remove('hidden');
+}
+
+if(view==='add-employee'){
+    document.getElementById('add-employee-bar').classList.remove('hidden');
+}
+
+// Show per screen
+if(view==='available-shift-detail'){
+    // Detail screen par action buttons dikhane ke liye
+    document.querySelector('#view-available-shift-detail .fixed-action-bar').classList.remove('hidden');
+}
+if(view==='schedule'){
+    document.getElementById('schedule-bar').classList.remove('hidden');
+}
+
+if(view==='assign-shift'){
+    document.getElementById('assign-bar').classList.remove('hidden');
+}
+
+if(view==='unassigned'){
+    document.getElementById('unassigned-bar').classList.remove('hidden');
+}
+    const title = document.getElementById('page-title');
+
+    if(view === 'dashboard') {
+    title.innerText = ''; 
+    document.getElementById('header-brand').classList.remove('hidden');
+} else {
+    document.getElementById('header-brand').classList.add('hidden');
+}
+    if(view === 'schedule'){
+        title.innerText = 'Weekly Schedule';
+        renderScheduleDates();
+        renderScheduleList();
+    }
+    if(view === 'unassigned'){
+        title.innerText = 'Unassigned Shifts';
+        renderUnassignedDates();
+        renderUnassignedShifts();
+    }
+    if(view === 'action-list') title.innerText = 'Requests';
+    if(view === 'availability-grid') title.innerText = 'Availability';
+    if(view === 'assign-shift') title.innerText = 'Assign Shift';
+    if(view === 'employees') title.innerText = 'Employees';
+	if(view === 'timeoff') title.innerText = 'Employees Time Off';
+if(view === 'availability') title.innerText = 'Employees Availability';
+if(view === 'cloud') title.innerText = 'Cloud Library';
+if(view === 'contacts') title.innerText = 'Contacts';
+if(view === 'broadcast') title.innerText = 'Broadcast';
+if(view === 'chitchat') title.innerText = 'Chitchat';
+if(view === 'available-shifts-list') title.innerText = 'Available Shifts';
+if(view === 'available-shift-detail') title.innerText = 'Available Shifts';
+if(view === 'support') title.innerText = 'Support Tickets';
+if(view === 'support-add') title.innerText = 'Raise New Ticket';
+if(view === 'support-detail') title.innerText = 'Ticket Details';
+if(view === 'settings') title.innerText = 'Settings';
+if(view === 'profile-settings') title.innerText = 'Profile Settings';
+if(view === 'change-password') title.innerText = 'Change Password';
+if(view === 'notification-prefs') title.innerText = 'Notification Preferences';
+if(view === 'language') title.innerText = 'Language';
+if(view === 'ai-analytics') title.innerText = 'AI Insights';
+if(view === 'shared') title.innerText = 'Shared Device';
+if(view === 'support') title.innerText = 'Support';
+
+if(view === 'timeoff') {
+    title.innerText = 'Employees Time Off';
+    renderTimeoffWeek(); // Calendar render karne ke liye
+    renderTimeoff();     // Initial data render karne ke liye
+}
+if(view === 'availability') {
+    title.innerText = 'Employees Availability';
+    const searchInput = document.getElementById('availability-search');
+    if(searchInput) searchInput.value = ''; // Reset search input value
+    renderAvailability(); 
+}
+if(view === 'chitchat') {
+    title.innerText = 'Chitchat';
+    renderChitchatList(); // This restores the chat list
+}
+
+if(view === 'contacts') {
+    title.innerText = 'Contacts';
+    renderContacts(); // This restores the contacts list
+}
+if(view === 'cloud') {
+    title.innerText = 'Cloud Library';
+    renderCloud();
+    document.getElementById('cloud-bar').classList.remove('hidden'); // Show the Cloud Add Bar
+}
+
+    document.getElementById('main-content').scrollTop = 0;
+}
+
+function goBack(){
+    // Hide all action bars first
+    const actionBars = ['schedule-bar', 'assign-bar', 'unassigned-bar', 'edit-employee-bar', 'add-employee-bar'];
+    actionBars.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.classList.add('hidden');
+    });
+
+    if(navigationStack.length <= 1){
+        navigationStack = [];
+        isGoingBack = true;
+        switchView('dashboard');
+        setTimeout(()=>{ isGoingBack = false; }, 100);
+        return;
+    }
+
+    isGoingBack = true;
+    navigationStack.pop(); // Remove the current screen from stack
+    const previousView = navigationStack.pop(); // Get the screen before it
+    
+    // Safety: If coming back to employees, reset the bottom nav tabs
+    if(previousView === 'emp-pending') {
+        openEmployeeScreen('emp-pending'); 
+    } else {
+        switchView(previousView);
+    }
+    
+    setTimeout(()=>{ isGoingBack = false; }, 100);
+}
+function hideModal() { 
+    const modal = document.getElementById('modal-container');
+    modal.classList.remove('active');
+    
+    // Allow main screen to scroll again
+    document.getElementById('main-content').style.overflow='auto';
+
+    // Figure out which view we are currently on
+    const currentViewEl = document.querySelector('[id^="view-"]:not(.hidden)');
+    if (!currentViewEl) return;
+    const viewId = currentViewEl.id.replace('view-','');
+
+    // Restore the correct fixed action bar for that screen
+    if(viewId === 'schedule') document.getElementById('schedule-bar').classList.remove('hidden');
+    if(viewId === 'unassigned') document.getElementById('unassigned-bar').classList.remove('hidden');
+    if(viewId === 'assign-shift') document.getElementById('assign-bar').classList.remove('hidden');
+}
+    function showCreateShiftModal() { 
+    document.getElementById('modal-container').classList.add('active'); 
+	document.getElementById('main-content').style.overflow='hidden';
+
+    // HIDE ALL ACTION BARS
+    document.getElementById('schedule-bar').classList.add('hidden');
+    document.getElementById('assign-bar').classList.add('hidden');
+    document.getElementById('unassigned-bar').classList.add('hidden');
+    document.getElementById('edit-employee-bar').classList.add('hidden');
+    document.getElementById('add-employee-bar').classList.add('hidden');
+
+    document.getElementById('employee-dropdown').innerHTML =
+        allEmployees.map(e => `<option>${e.name}</option>`).join('');
+}
+function renderScheduleDates() {
+    const scroller = document.getElementById('date-scroller');
+    const week = [];
+    
+    // Starting from Feb 22, 2026
+    const startDate = new Date(2026, 1, 22); // Note: Month is 0-indexed (1 = Feb)
+
+    for(let i=0; i<7; i++){
+        const d = new Date(startDate);
+        d.setDate(startDate.getDate() + i);
+
+        week.push({
+            day: d.toLocaleDateString('en-US', {weekday: 'short'}),
+            num: d.getDate(),
+            date: d.toISOString().split('T')[0]
+        });
+    }
+
+    scroller.innerHTML = week.map((d, i) => `
+        <div onclick="selectScheduleDay('${d.date}', this)"
+        class="date-chip ${i === 0 ? 'date-chip-active' : 'bg-white shadow-sm'}">
+            <span class="text-[10px] font-bold uppercase">${d.day}</span>
+            <span class="text-lg font-black">${d.num}</span>
+        </div>
+    `).join('');
+}
+
+function selectScheduleDay(date,el){
+
+    document.querySelectorAll('#date-scroller .date-chip')
+    .forEach(d=>{
+        d.classList.remove('date-chip-active');
+        d.classList.add('bg-white');
+    });
+
+    el.classList.remove('bg-white');
+    el.classList.add('date-chip-active');
+}
+	function renderUnassignedDates(){
+    const scroller = document.getElementById('unassigned-date-scroller');
+
+    const dates = [
+        {day:'Mon',num:'23'},
+        {day:'Tue',num:'24',active:true},
+        {day:'Wed',num:'25'},
+        {day:'Thu',num:'26'},
+        {day:'Fri',num:'27'},
+        {day:'Sat',num:'28'},
+        {day:'Sun',num:'01'}
+    ];
+
+    scroller.innerHTML = dates.map(d => 
+        `<div class="date-chip ${d.active?'date-chip-active':'bg-white'}">
+            <span class="text-[10px] font-bold uppercase">${d.day}</span>
+            <span class="text-lg font-black">${d.num}</span>
+        </div>`
+    ).join('');
+}
+    function renderScheduleList() {
+        const list = document.getElementById('scheduled-list');
+        list.innerHTML = allEmployees.slice(0, 6).map(emp => `<div onclick="openEditShift('${emp.name}','${emp.pos}')" class="bg-white p-4 rounded-3xl border flex items-center gap-4 shadow-sm cursor-pointer active:scale-[0.98]"><img src="https://i.pravatar.cc/100?img=${emp.img}" class="w-11 h-11 rounded-full object-cover shrink-0"><div class="flex-1 min-w-0"><h4 class="font-bold text-slate-800 text-sm truncate">${emp.name}</h4><p class="text-[10px] text-blue-500 font-bold uppercase tracking-tight">${emp.pos}</p></div><div class="text-right">
+<p class="text-xs font-black text-slate-700">08:00A-04:00P</p>
+<i class="fas fa-mug-hot text-amber-500 text-xs mt-1"></i>
+</div></div>`).join('');
+    }
+    function triggerDatePicker() { document.getElementById('calendar-date-picker').showPicker(); }
+    function onDateSelected() { renderScheduleDates(); }
+ function maximizeTrend() { 
+    document.getElementById('trend-maximize-modal').classList.add('active'); 
+    
+    // 1. Copy the Graph Lines/Dots
+    document.getElementById('max-graph-container').innerHTML = document.getElementById('graph-container').innerHTML; 
+    
+    // 2. Copy the X-Axis Labels (4A, 12P, etc.)
+    const originalXAxis = document.getElementById('x-axis-labels');
+    const maxXAxis = document.getElementById('max-x-axis-container');
+    maxXAxis.innerHTML = originalXAxis.innerHTML;
+    maxXAxis.className = "flex justify-between px-8 mt-2 text-slate-400 font-bold text-[10px]";
+
+    // 3. Copy the Legend (Scheduled vs Actual notation)
+    // Find the legend div based on its class
+    const originalLegend = document.querySelector('#view-dashboard .legend-dot').parentElement.parentElement;
+    const maxLegend = document.getElementById('max-legend-container');
+    maxLegend.innerHTML = originalLegend.innerHTML;
+    maxLegend.className = "flex justify-center gap-6 mt-4"; 
+}
+    function hideMaximizeTrend() { document.getElementById('trend-maximize-modal').classList.remove('active'); }
+    function askConfirmation(t, s) { const m = document.getElementById('confirmation-modal'); document.getElementById('confirmation-msg').innerText = t; m.classList.add('active'); document.getElementById('btn-confirm-yes').onclick = () => processRequest(s); }
+    function hideConfirmation() { document.getElementById('confirmation-modal').classList.remove('active'); }
+    function processRequest(status) {
+    hideConfirmation();
+    hideModal();
+
+    const modal = document.getElementById('status-modal');
+    const card = document.getElementById('status-card');
+    const iconContainer = document.getElementById('modal-icon-container');
+    const iconSymbol = document.getElementById('modal-icon-symbol');
+    const title = document.getElementById('modal-text');
+    const subtext = document.getElementById('modal-subtext');
+
+    if (status === 'Approved' || status === 'Successful') {
+        // Success Styling
+        iconContainer.className = "w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 bg-emerald-100 text-emerald-600";
+        iconSymbol.className = "fas fa-check text-3xl";
+        title.innerText = "Success!";
+        subtext.innerText = "Action completed successfully.";
+    } else {
+        // Declined/Error Styling
+        iconContainer.className = "w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 bg-rose-100 text-rose-600";
+        iconSymbol.className = "fas fa-times text-3xl";
+        title.innerText = "Declined";
+        subtext.innerText = "The request has been cancelled.";
+    }
+
+    // Show with animation
+    modal.classList.add('active');
+    setTimeout(() => { card.style.transform = "scale(1)"; }, 10);
+
+    // Auto-hide after 1.8 seconds
+    setTimeout(() => {
+        card.style.transform = "scale(0.9)";
+        modal.classList.remove('active');
+    }, 1800);
+}
+	let shiftBreaks = [];
+
+function addBreakToShift(){
+
+    const start = document.getElementById('break-start').value;
+    const end = document.getElementById('break-end').value;
+
+    if(!start || !end){
+        alert('Enter break start and end time');
+        return;
+    }
+
+    const type = document.getElementById('break-type')?.value || 'Rest';
+
+    shiftBreaks.push({start,end,type});
+
+    renderBreakList();
+}
+
+function renderBreakList(){
+
+    const list = document.getElementById('modal-break-list');
+
+    list.innerHTML = shiftBreaks.map((b,i)=>`
+    <div class="break-entry-item">
+        <div>
+            <div class="font-bold text-[12px]">${b.type} Break</div>
+            <div class="text-[10px] text-slate-500">${b.start} - ${b.end}</div>
+        </div>
+
+        <button onclick="removeBreak(${i})" class="text-red-500">
+            <i class="fas fa-trash"></i>
+        </button>
+    </div>
+    `).join('');
+}
+
+function removeBreak(i){
+    shiftBreaks.splice(i,1);
+    renderBreakList();
+}
+let sidebarOpen = false;
+
+function toggleSidebar(){
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    const isOpen = sidebar.classList.contains('open');
+
+    if(isOpen){
+        sidebar.classList.remove('open');
+        overlay.classList.add('hidden');
+    } else {
+        sidebar.classList.add('open');
+        overlay.classList.remove('hidden');
+    }
+}
+    function showLocationPicker() {}
+	function renderUnassignedShifts(){
+    const container = document.getElementById('unassigned-list');
+
+    const shifts = [
+        {date:'Tue Feb 24', pos:'Cashier', time:'08:00A - 04:00P'},
+        {date:'Tue Feb 24', pos:'Cook', time:'10:00A - 06:00P'},
+        {date:'Wed Feb 25', pos:'No Position', time:'12:00P - 08:00P'},
+        {date:'Thu Feb 26', pos:'Line Cook', time:'04:00P - 10:00P'}
+    ];
+
+    container.innerHTML = shifts.map((s,i) => `
+    <div 
+        oncontextmenu="toggleShiftSelection(event,${i})"
+        onclick="handleShiftTap(${i})"
+        class="shift-card bg-white p-4 rounded-3xl border flex items-center gap-4 shadow-sm">
+
+        <div class="w-11 h-11 rounded-full bg-violet-50 flex items-center justify-center text-violet-500 shrink-0">
+            <i class="fas fa-user-slash"></i>
+        </div>
+
+        <div class="flex-1 min-w-0">
+            <h4 class="font-bold text-slate-800 text-sm truncate">${s.pos}</h4>
+            <p class="text-[10px] text-blue-500 font-bold uppercase tracking-tight">${s.date}</p>
+            <p class="text-[10px] text-slate-500">${s.time}</p>
+        </div>
+
+        <button 
+            onclick="event.stopPropagation(); openAssignShift(${i});" 
+            class="bg-blue-600 text-white text-[10px] font-black px-4 py-2 rounded-xl">
+            Assign
+        </button>
+
+    </div>
+`).join('');
+}
+let selectedEmployee = null;
+let selectedShift = null;
+function openAssignShift(index){
+    const shifts = [
+        {date:'Tue Feb 24', pos:'Cashier', time:'08:00A - 04:00P'},
+        {date:'Tue Feb 24', pos:'Cook', time:'10:00A - 06:00P'},
+        {date:'Wed Feb 25', pos:'No Position', time:'12:00P - 08:00P'},
+        {date:'Thu Feb 26', pos:'Line Cook', time:'04:00P - 10:00P'}
+    ];
+
+    selectedShift = shifts[index];
+    selectedEmployee = null;
+
+    // Fill fields
+    document.getElementById('assign-position').value = selectedShift.pos === 'No Position' ? 'Crew' : selectedShift.pos;
+
+    // parse time
+    const [start,end] = selectedShift.time.split(' - ');
+    document.getElementById('assign-start').value = convertTo24(start);
+    document.getElementById('assign-end').value = convertTo24(end);
+
+    switchView('assign-shift');
+    renderAssignEmployees('eligible');
+}
+function openEditShift(name,pos){
+
+    document.getElementById('modal-container').classList.add('active');
+
+    document.querySelector('#modal-container h3').innerText='Edit Shift';
+
+    document.getElementById('employee-dropdown').innerHTML =
+    `<option selected>${name}</option>`;
+
+}
+function showCreateUnassignedModal(){
+    const modal = document.getElementById('modal-container');
+    modal.classList.add('active');
+
+    const empField = document.getElementById('employee-dropdown').closest('.form-icon-wrap');
+    empField.style.display = 'none';
+	shiftBreaks=[];
+renderBreakList();
+}
+	function renderAssignEmployees(type){
+    const list = document.getElementById('assign-employee-list');
+
+let employees;
+
+if(type==='eligible'){
+    employees = allEmployees.filter(e=>{
+        if(!selectedShift) return true;
+
+        if(selectedShift.pos==='Cashier') return e.pos.includes('Cashier');
+        if(selectedShift.pos==='Cook' || selectedShift.pos==='Line Cook') return e.pos.includes('Cook');
+        if(selectedShift.pos==='Shift Lead') return e.pos.includes('Lead');
+        return true;
+    });
+}else{
+    employees = allEmployees.filter(e=>{
+        if(!selectedShift) return true;
+        return !(
+            (selectedShift.pos==='Cashier' && e.pos.includes('Cashier')) ||
+            ((selectedShift.pos==='Cook' || selectedShift.pos==='Line Cook') && e.pos.includes('Cook'))
+        );
+    });
+}
+
+    list.innerHTML = employees.map(emp => `
+        <div onclick="selectAssignEmployee(this,'${emp.name}')"
+            class="bg-white p-4 rounded-3xl border flex items-center gap-4 shadow-sm cursor-pointer">
+            
+            <img src="https://i.pravatar.cc/100?img=${emp.img}" 
+                class="w-11 h-11 rounded-full object-cover shrink-0">
+
+            <div class="flex-1 min-w-0">
+                <h4 class="font-bold text-slate-800 text-sm truncate">${emp.name}</h4>
+                <p class="text-[10px] text-blue-500 font-bold uppercase tracking-tight">${emp.pos}</p>
+            </div>
+
+            <div class="w-5 h-5 border-2 border-slate-300 rounded-full assign-radio"></div>
+        </div>
+    `).join('');
+}
+	function switchAssignTab(tab){
+    document.getElementById('tab-eligible').className = `action-tab-btn ${tab==='eligible'?'active':'inactive'}`;
+    document.getElementById('tab-others').className = `action-tab-btn ${tab==='others'?'active':'inactive'}`;
+    renderAssignEmployees(tab);
+}
+	function selectAssignEmployee(el,name){
+    document.getElementById('assign-employee-list')
+    .querySelectorAll('.assign-radio')
+    .forEach(r=>{
+        r.classList.remove('bg-blue-600','border-blue-600');
+    });
+
+    el.querySelector('.assign-radio').classList.add('bg-blue-600','border-blue-600');
+    selectedEmployee = name;
+}
+function confirmAssignEmployee(){
+    if(!selectedEmployee){
+        alert('Select an employee to assign this shift.');
+        return;
+    }
+
+    askConfirmation('Assign shift to ' + selectedEmployee, 'Approved');
+
+    setTimeout(()=>{
+        switchView('unassigned');
+        renderUnassignedShifts();
+    },900);
+}
+	function handleShiftTap(i){
+    if(!selectionMode) return;
+    toggleSelect(i);
+}
+
+function toggleShiftSelection(e,i){
+    e.preventDefault(); // long press / right click mobile simulate
+    selectionMode = true;
+    toggleSelect(i);
+    showSelectionBar();
+}
+
+function toggleSelect(i){
+    const index = selectedShifts.indexOf(i);
+    const cards = document.querySelectorAll('.shift-card');
+
+    if(index>-1){
+        selectedShifts.splice(index,1);
+        cards[i].classList.remove('ring-2','ring-blue-500','bg-blue-50');
+    }else{
+        selectedShifts.push(i);
+        cards[i].classList.add('ring-2','ring-blue-500','bg-blue-50');
+    }
+
+    if(selectedShifts.length===0) exitSelectionMode();
+}
+function showSelectionBar(){
+    document.getElementById('multi-select-bar').classList.remove('hidden');
+
+    // Hide Create button
+    document.querySelector('#view-unassigned .fixed-action-bar:not(#multi-select-bar)')
+        .classList.add('hidden');
+}
+
+function exitSelectionMode(){
+    selectionMode=false;
+    selectedShifts=[];
+
+    document.getElementById('multi-select-bar').classList.add('hidden');
+
+    // Show Create button back
+    document.querySelector('#view-unassigned .fixed-action-bar:not(#multi-select-bar)')
+        .classList.remove('hidden');
+
+    document.querySelectorAll('.shift-card').forEach(c=>{
+        c.classList.remove('ring-2','ring-blue-500','bg-blue-50');
+    });
+}
+
+function broadcastShifts(){
+    askConfirmation(selectedShifts.length + ' shifts will be offered to available employees', 'Approved');
+    exitSelectionMode();
+}
+function convertTo24(timeStr){
+    let [time,period] = timeStr.match(/(\d+:\d+)([AP])/).slice(1);
+    let [h,m] = time.split(':');
+    h = parseInt(h);
+
+    if(period==='P' && h!==12) h+=12;
+    if(period==='A' && h===12) h=0;
+
+    return `${h.toString().padStart(2,'0')}:${m}`;
+}
+	function openMenu(screen){
+
+    toggleSidebar();
+
+    if(screen === 'availability'){
+        switchView('action-list');
+        currentActionType = 'Availability';
+        setActionTab('Needing');
+        return;
+    }
+
+    if(screen === 'employees'){
+    switchView('employees');
+    return;
+}
+
+    if(screen === 'reports'){
+        alert('Reports module placeholder');
+        return;
+    }
+
+    if(screen === 'settings'){
+        alert('Settings module placeholder');
+        return;
+    }
+
+    switchView(screen);
+}
+// ---------- TIME OFF ----------
+let timeoffData = [
+    {name:'Anita Roy', img:32, date:'Feb 24', time:'09:00A - 05:00P', status:'pending', reason:'Family function'},
+    {name:'Rahul Verma', img:41, date:'Feb 25', time:'All Day', status:'pending', reason:'Personal Work'},
+    {name:'David Smith', img:33, date:'Feb 26', time:'09:00A - 01:00P', status:'approved', reason:'Doctor appointment'},
+    {name:'Sarah Jenkins', img:34, date:'Feb 27', time:'All Day', status:'declined', reason:'Travel plans'},
+    {name:'Luis Martinez', img:12, date:'Feb 28', time:'02:00P - 10:00P', status:'declined', reason:'Urgent Repair'}
+];
+
+function renderTimeoff(filterData = null) {
+    const list = document.getElementById('timeoff-list');
+    const displayData = filterData || timeoffData;
+
+    list.innerHTML = displayData.map(t => `
+        <div class="bg-white p-5 rounded-[32px] border flex gap-4 items-start shadow-sm">
+            <img src="https://i.pravatar.cc/100?img=${t.img}" class="w-12 h-12 rounded-full object-cover">
+            <div class="flex-1">
+                <h4 class="font-bold text-slate-800 text-sm">${t.name}</h4>
+                <p class="text-[11px] text-blue-600 font-bold mt-0.5">${t.date} • ${t.time}</p>
+                <p class="text-[11px] text-slate-500 mt-1">Reason: ${t.reason}</p>
+                <div class="mt-2 flex items-center gap-1.5">
+                    <div class="w-1.5 h-1.5 rounded-full ${t.status==='approved'?'bg-emerald-500':t.status==='declined'?'bg-red-500':'bg-amber-500'}"></div>
+                    <span class="text-[10px] uppercase font-black tracking-widest ${t.status==='approved'?'text-emerald-600':t.status==='declined'?'text-red-500':'text-amber-500'}">${t.status}</span>
+                </div>
+            </div>
+
+            <div class="flex gap-2 shrink-0">
+                ${t.status === 'pending' ? `
+                    <button onclick="updateTof('${t.name}','approved')" class="w-9 h-9 bg-emerald-600 text-white rounded-full flex items-center justify-center shadow-sm"><i class="fas fa-check text-xs"></i></button>
+                    <button onclick="updateTof('${t.name}','declined')" class="w-9 h-9 bg-red-500 text-white rounded-full flex items-center justify-center shadow-sm"><i class="fas fa-times text-xs"></i></button>
+                ` : t.status === 'approved' ? `
+    <button onclick="updateTof('${t.name}','declined')" class="w-9 h-9 bg-red-500 text-white rounded-full flex items-center justify-center shadow-sm border-2 border-white active:scale-90 transition-transform">
+        <i class="fas fa-times text-xs"></i>
+    </button>
+` : ''}
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderTimeoffWeek(){
+    const container = document.getElementById('timeoff-week');
+    if(!container) return; // Safety check
+
+    const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    const startDay = 23; // Aapke design ke hisaab se
+
+    container.innerHTML = days.map((d, i) => `
+        <div class="date-chip ${i === 1 ? 'date-chip-active' : 'bg-white shadow-sm border border-slate-100'}">
+            <span class="text-[10px] font-bold uppercase ${i === 1 ? 'text-white' : 'text-slate-400'}">${d}</span>
+            <span class="text-lg font-black">${startDay + i}</span>
+        </div>
+    `).join('');
+}
+
+function updateTof(name, status) {
+    // Update the data
+    timeoffData = timeoffData.map(t => t.name === name ? { ...t, status: status } : t);
+    
+    // Show the visual feedback modal
+    // If status is approved, show green success. If declined (ignore), show red decline.
+    processRequest(status === 'approved' ? 'Approved' : 'Declined');
+    
+    // Check if a filter is currently active, if not, render all
+    const activeTab = document.querySelector('.tof-filter.bg-slate-900');
+    const filterType = activeTab ? activeTab.innerText.toLowerCase() : 'all';
+    
+    if(filterType === 'all') {
+        renderTimeoff();
+    } else {
+        const filtered = timeoffData.filter(t => t.status === filterType);
+        renderTimeoff(filtered);
+    }
+}
+function filterTimeoff(type) {
+    // 1. Update Tab Styling
+    document.querySelectorAll('.tof-filter').forEach(b => {
+        b.classList.remove('bg-slate-900', 'text-white');
+        b.classList.add('bg-white', 'border');
+    });
+    event.target.classList.remove('bg-white', 'border');
+    event.target.classList.add('bg-slate-900', 'text-white');
+
+    // 2. Filter the Data
+    if (type === 'all') {
+        renderTimeoff(timeoffData);
+    } else {
+        const filtered = timeoffData.filter(t => t.status === type);
+        renderTimeoff(filtered);
+    }
+}
+
+// ---------- AVAILABILITY LIST ----------
+function renderAvailability(search = ''){
+    const list = document.getElementById('availability-employee-list');
+    if(!list) return;
+
+    // Convert search to lowercase for case-insensitive filtering
+    const searchTerm = search.toLowerCase();
+
+    list.innerHTML = allEmployees
+    .filter(e => e.name.toLowerCase().includes(searchTerm))
+    .map(e => `
+        <div onclick="openAvailabilityGrid('${e.name}','${e.img}')" 
+             class="bg-white p-5 rounded-[32px] border flex items-center gap-4 shadow-sm active:scale-[0.98] transition-all cursor-pointer">
+            <img src="https://i.pravatar.cc/100?img=${e.img}" class="w-12 h-12 rounded-full object-cover">
+            <div class="flex-1">
+                <h4 class="font-bold text-slate-800 text-sm">${e.name}</h4>
+                <p class="text-[11px] text-blue-600 font-bold">${e.pos}</p>
+            </div>
+            <i class="fas fa-chevron-right text-slate-300 text-sm"></i>
+        </div>`).join('');
+
+    // If no results found, show a message
+    if (list.innerHTML === "") {
+        list.innerHTML = '<p class="text-center text-slate-400 text-xs py-10">No employees found</p>';
+    }
+}
+
+// ---------- CLOUD LIBRARY ----------
+
+let cloudFiles = [
+    { name: 'Employee Handbook.pdf', category: 'Training Material', desc: 'Mandatory reading for all staff', date: 'Feb 10' },
+    { name: 'Leave Request.docx', category: 'Forms', desc: 'Standard leave application form', date: 'Jan 22' }
+];
+
+function renderCloud() {
+    const list = document.getElementById('cloud-list');
+    const filter = document.getElementById('cloud-category-filter').value;
+    const categories = ["Forms", "Resources", "Templates", "Training Material", "Others"];
+    
+    let html = "";
+
+    categories.forEach(cat => {
+        if (filter !== 'all' && filter !== cat) return;
+
+        const filesInCat = cloudFiles.filter(f => f.category === cat);
+        if (filesInCat.length > 0 || filter !== 'all') {
+            html += `
+                <div class="category-group">
+                    <h5 class="text-[11px] font-black text-slate-400 uppercase tracking-widest px-1 mb-4 flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> ${cat}
+                    </h5>
+                    <div class="space-y-3 mb-6">
+                        ${filesInCat.length > 0 ? filesInCat.map(f => `
+                            <div class="bg-white p-5 rounded-[32px] border shadow-sm flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600">
+                                    <i class="far fa-file-alt text-xl"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-bold text-slate-800 text-sm truncate">${f.name}</h4>
+                                    <p class="text-[10px] text-slate-400 font-medium truncate">${f.desc || 'No description'}</p>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <button onclick="downloadFile('${f.name}')" class="w-8 h-8 rounded-full flex items-center justify-center text-blue-500 hover:bg-blue-50 transition-colors">
+                                        <i class="fas fa-download text-xs"></i>
+                                    </button>
+                                    <button onclick="deleteFile('${f.name}')" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-300 hover:text-red-500 transition-colors">
+                                        <i class="fas fa-trash-alt text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('') : '<p class="text-xs text-slate-300 italic px-5 py-2">No files in this category</p>'}
+                    </div>
+                </div>
+            `;
+        }
+    });
+    list.innerHTML = html;
+}
+
+// Modal Control
+function openCloudUploadModal() {
+    document.getElementById('cloud-upload-modal').classList.add('active');
+    document.getElementById('cloud-bar').classList.add('hidden'); // Hide the add button bar
+}
+
+function hideCloudModal() {
+    document.getElementById('cloud-upload-modal').classList.remove('active');
+    document.getElementById('cloud-bar').classList.remove('hidden');
+}
+
+function triggerFileUpload() {
+    document.getElementById('real-file-input').click();
+}
+
+function handleFileSelection(e) {
+    const file = e.target.files[0];
+    if(file) document.getElementById('file-name-display').innerText = file.name;
+}
+
+function saveToCloud() {
+    const nameDisplay = document.getElementById('file-name-display');
+    const category = document.getElementById('upload-category').value;
+    const desc = document.getElementById('upload-desc').value;
+
+    if(nameDisplay.innerText === "Click to select file") { 
+        alert("Please select a file first"); 
+        return; 
+    }
+
+    cloudFiles.push({ 
+        name: nameDisplay.innerText, 
+        category: category, 
+        desc: desc, 
+        date: 'Feb 26' 
+    });
+
+    renderCloud();
+    hideCloudModal();
+    processRequest('Approved');
+    
+    // Reset modal for next time
+    nameDisplay.innerText = "Click to select file";
+    document.getElementById('upload-desc').value = "";
+}
+
+function deleteFile(name) {
+    cloudFiles = cloudFiles.filter(f => f.name !== name);
+    renderCloud();
+}
+
+function deleteFile(name){
+cloudFiles=cloudFiles.filter(f=>f.name!==name);
+renderCloud();
+}
+
+// ---------- CONTACTS ----------
+function renderContacts(search = ''){
+    const list = document.getElementById('contacts-list');
+    if(!list) return;
+
+    list.innerHTML = allEmployees
+    .filter(e => e.name.toLowerCase().includes(search.toLowerCase()))
+    .map(e => `
+        <div class="bg-white p-3 rounded-[24px] border border-slate-100 shadow-sm flex items-center gap-3 mb-3 active:scale-[0.98] transition-all">
+            
+            <img src="https://i.pravatar.cc/100?img=${e.img}" 
+                 class="w-14 h-14 rounded-full object-cover border-2 border-slate-50">
+
+            <div class="flex-1 min-w-0">
+                <div class="flex flex-col">
+                    <h4 class="font-black text-slate-800 text-[15px] tracking-tight leading-tight">${e.name}</h4>
+                    <p class="text-[9px] text-blue-600 font-bold uppercase tracking-widest mb-1">${e.pos}</p>
+                </div>
+                
+                <div class="flex flex-col gap-0.5 pt-1 mt-0.5">
+                    <div class="flex items-center gap-2 text-slate-600 font-semibold">
+                        <i class="fas fa-phone-alt text-[8px] text-slate-400"></i>
+                        <span class="text-[11px]">+91 98765 43210</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-slate-600 font-semibold leading-none">
+                        <i class="fas fa-envelope text-[8px] text-slate-400"></i>
+                        <span class="text-[11px] truncate">${e.name.toLowerCase().replace(' ', '.')}@zipfoods.com</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pl-2">
+                <a href="tel:+919876543210" class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center active:scale-90 transition-transform shadow-sm border border-emerald-100">
+                    <i class="fas fa-phone"></i>
+                </a>
+            </div>
+        </div>
+    `).join('');
+}
+function downloadFile(fileName) {
+    // Show a success popup to simulate the download starting
+    processRequest('Successful'); 
+    console.log("Starting download for: " + fileName);
+    
+    // In a real app, you would use: window.open('your-file-url-here');
+}
+
+
+
+
+
+// ---------- BROADCAST ----------
+function sendBroadcast(type){
+    const msg = document.getElementById('broadcast-msg').value;
+    if(!msg){
+        processRequest('Error'); // Will show the declined/red style
+        return;
+    }
+    processRequest('Approved'); // Shows the beautiful green success message
+    document.getElementById('broadcast-msg').value = '';
+}
+
+let chatFilter = 'all';
+
+// Extended Data with Groups & Unread status
+let chatList = [
+    { id: 1, name: "Mark Andrew", img: "31", lastMsg: "Hey, can you cover my shift tomorrow?", time: "11:22 AM", unread: 2, isGroup: false, status: 'Online' },
+    { id: 2, name: "Store Manager Group", img: "12", lastMsg: "New schedule for March is live!", time: "10:48 AM", unread: 0, isGroup: true, status: '9 Participants' },
+    { id: 3, name: "Anita Roy", img: "32", lastMsg: "Thanks for the help!", time: "Yesterday", unread: 1, isGroup: false, status: 'Online' },
+    { id: 4, name: "Supervisors Hub", img: "13", lastMsg: "Shift swap request approved.", time: "Yesterday", unread: 0, isGroup: true, status: '3 Participants' }
+];
+
+function setChatFilter(type) {
+    chatFilter = type;
+    // Update Tab UI
+    ['all', 'groups', 'unread'].forEach(t => {
+        const el = document.getElementById(`tab-chat-${t}`);
+        el.className = t === type ? "bg-slate-900 text-white px-5 py-2 rounded-full text-[11px] font-bold" : "bg-slate-100 text-slate-500 px-5 py-2 rounded-full text-[11px] font-bold";
+    });
+    renderChitchatList();
+}
+
+function renderChitchatList() {
+    const list = document.getElementById('chitchat-list-render');
+    const search = document.getElementById('chat-search-input').value.toLowerCase();
+    
+    const filtered = chatList.filter(chat => {
+        const matchesSearch = chat.name.toLowerCase().includes(search);
+        const matchesFilter = (chatFilter === 'all') || 
+                            (chatFilter === 'groups' && chat.isGroup) || 
+                            (chatFilter === 'unread' && chat.unread > 0);
+        return matchesSearch && matchesFilter;
+    });
+
+    list.innerHTML = filtered.map(c => `
+        <div onclick="openChatWithData('${c.name}', '${c.img}', '${c.status}', ${c.isGroup})" class="bg-white p-4 border-b border-slate-50 flex items-center gap-4 active:bg-slate-50 transition-all cursor-pointer">
+            <div class="relative">
+                <img src="https://i.pravatar.cc/100?img=${c.img}" class="w-14 h-14 rounded-full object-cover">
+                ${!c.isGroup ? `<span class="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"></span>` : ''}
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="flex justify-between items-center mb-1">
+                    <h4 class="font-black text-slate-800 text-[15px] truncate">${c.name}</h4>
+                    <span class="text-[10px] ${c.unread > 0 ? 'text-emerald-500 font-black' : 'text-slate-400 font-bold'}">${c.time}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <p class="text-[12px] text-slate-500 truncate pr-4 font-medium">${c.lastMsg}</p>
+                    ${c.unread > 0 ? `<span class="bg-emerald-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">${c.unread}</span>` : ''}
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function openChatWithData(name, img, status, isGroup) {
+    switchView('chatbox');
+    document.getElementById('chat-user-name').innerText = name;
+    document.getElementById('chat-user-img').src = `https://i.pravatar.cc/100?img=${img}`;
+    document.getElementById('chat-user-status-text').innerText = status;
+    document.getElementById('chat-user-status-dot').className = isGroup ? "hidden" : "absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-[#1e293b] rounded-full";
+    
+    // Pre-fill a schedule related message
+    const msgBox = document.getElementById('chat-messages');
+    msgBox.innerHTML = `<div class="flex flex-col gap-2">
+        <div class="bg-white p-3 rounded-2xl border text-sm max-w-[85%] shadow-sm">
+            Hello Team, I've just published the <b>Weekly Schedule</b>. Please check your assigned shifts!
+            <p class="text-[8px] text-slate-400 mt-1 uppercase font-bold text-right">System • 09:00 AM</p>
+        </div>
+    </div>`;
+}
+
+// Logic to toggle between Mic and Send icon
+document.getElementById('chat-input')?.addEventListener('input', function(e) {
+    const voiceBtn = document.getElementById('voice-btn');
+    const sendBtn = document.getElementById('send-btn');
+    if(e.target.value.length > 0) {
+        voiceBtn.classList.add('hidden');
+        sendBtn.classList.remove('hidden');
+    } else {
+        voiceBtn.classList.remove('hidden');
+        sendBtn.classList.add('hidden');
+    }
+});
+
+
+
+function renderChat(name){
+const box=document.getElementById('chat-messages');
+box.innerHTML=chatData[name].map(m=>`
+<div class="p-3 rounded-2xl max-w-[70%] ${m.me?'bg-blue-600 text-white ml-auto':'bg-white border'}">
+${m.text}
+</div>`).join('');
+box.scrollTop=box.scrollHeight;
+}
+
+function sendChatMessage(){
+const input=document.getElementById('chat-input');
+if(!input.value)return;
+const name=document.getElementById('chat-user-name').innerText;
+chatData[name].push({text:input.value,me:true});
+input.value='';
+renderChat(name);
+}
+let sharedMode=false;
+
+function toggleSharedMode(){
+sharedMode=!sharedMode;
+document.getElementById('shared-status').innerText='Mode: '+(sharedMode?'ON':'OFF');
+
+if(sharedMode){
+alert('Shared Mode Activated');
+}else{
+alert('Shared Mode Disabled');
+}
+}
+// --- NAYA SUPPORT SYSTEM LOGIC ---
+
+let supportTickets = [
+    { id: 'TIC842', title: 'Login failing on Android', cat: 'Technical Issue', msg: 'The app keeps crashing on the login screen since morning.', user: 'Mark Andrew', date: 'Feb 26, 2026', time: '10:30 AM', zone: 'IST', status: 'Open' },
+    { id: 'TIC321', title: 'Schedule Syncing Delay', cat: 'Scheduling Problem', msg: 'My shifts are not reflecting immediately.', user: 'Anita Roy', date: 'Feb 24, 2026', time: '02:15 PM', zone: 'IST', status: 'Closed' }
+];
+
+function renderTicketsList(search = '') {
+    const list = document.getElementById('ticket-list-render');
+    const filter = document.getElementById('ticket-status-filter').value;
+    if(!list) return;
+
+    const filtered = supportTickets.filter(t => {
+        const matchesSearch = t.title.toLowerCase().includes(search.toLowerCase()) || t.id.toLowerCase().includes(search.toLowerCase());
+        const matchesFilter = filter === 'All' || t.status === filter;
+        return matchesSearch && matchesFilter;
+    });
+
+    list.innerHTML = filtered.map(t => `
+        <div onclick="openTicketDetail('${t.id}')" class="bg-white p-5 rounded-[32px] border shadow-sm active:scale-[0.98] transition-all cursor-pointer">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-[10px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase">${t.id}</span>
+                <span class="text-[9px] font-black uppercase tracking-widest ${t.status === 'Open' ? 'text-emerald-500' : 'text-slate-400'}">${t.status}</span>
+            </div>
+            <h4 class="font-bold text-slate-800 text-sm mb-2 truncate">${t.title}</h4>
+            <div class="flex items-center gap-2 text-[10px] text-slate-400 font-medium">
+                <i class="far fa-clock"></i>
+                <span>${t.date} • ${t.time} (${t.zone})</span>
+            </div>
+        </div>
+    `).join('');
+    
+    if(filtered.length === 0) {
+        list.innerHTML = '<div class="text-center py-20 text-slate-400 text-xs font-bold uppercase tracking-widest">No tickets found</div>';
+    }
+}
+
+function openAddTicketScreen() {
+    const nextId = 'TIC' + Math.floor(100 + Math.random() * 900);
+    document.getElementById('new-ticket-id').value = nextId;
+    document.getElementById('new-ticket-title').value = '';
+    document.getElementById('new-ticket-msg').value = '';
+    document.getElementById('ticket-file-name').innerText = 'Attach relevant file';
+    switchView('support-add');
+}
+
+function submitNewTicket() {
+    const title = document.getElementById('new-ticket-title').value;
+    const cat = document.getElementById('new-ticket-cat').value;
+    const msg = document.getElementById('new-ticket-msg').value;
+
+    if(!title || !msg) {
+        processRequest('Declined');
+        return;
+    }
+
+    const now = new Date();
+    const newTicket = {
+        id: document.getElementById('new-ticket-id').value,
+        title: title,
+        cat: cat,
+        msg: msg,
+        user: 'Mark Andrew',
+        date: now.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: '2026' }),
+        time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
+        zone: 'IST',
+        status: 'Open'
+    };
+
+    supportTickets.unshift(newTicket);
+    switchView('support');
+    renderTicketsList();
+    processRequest('Approved');
+}
+
+function openTicketDetail(id) {
+    const t = supportTickets.find(ticket => ticket.id === id);
+    if(!t) return;
+
+    document.getElementById('detail-ticket-id').innerText = t.id;
+    document.getElementById('detail-ticket-status').innerText = t.status;
+    document.getElementById('detail-ticket-title').innerText = t.title;
+    document.getElementById('detail-ticket-meta').innerText = `Added By ${t.user} • ${t.date} (${t.zone})`;
+    document.getElementById('detail-ticket-desc').innerText = t.msg;
+    
+    switchView('support-detail');
+}
+
+function filterSupportTickets(val) {
+    renderTicketsList(val);
+}
+
+function openSupport() {
+    switchView('support');
+    renderTicketsList();
+}
+
+
+window.onload = function(){
+    // Ye line ensure karegi ki dashboard load hote hi list dikhe
+    toggleShiftList('upcoming'); 
+    
+    document.getElementById('schedule-bar').classList.add('hidden');
+    toggleTrend('today');
+    renderScheduleDates();
+    renderTimeoff();
+    renderTimeoffWeek();
+    renderAvailability();
+    renderContacts();
+    renderChitchatList();
+};
+
+function openEmployeeScreen(screen){
+
+
+    switchView(screen);
+
+    const tabs = document.querySelectorAll('#employee-bottom-nav button');
+    tabs.forEach(t=>t.classList.remove('tab-active'));
+
+    if(screen==='employees') tabs[0].classList.add('tab-active');
+    if(screen==='emp-pending') tabs[1].classList.add('tab-active');
+    if(screen==='emp-ignored') tabs[2].classList.add('tab-active');
+}
+function openEmployeeProfile(name,img,pos){
+
+switchView('edit-employee');
+
+document.getElementById('edit-emp-img').src =
+`https://i.pravatar.cc/150?img=${img}`;
+
+document.getElementById('edit-emp-name').innerText=name;
+document.getElementById('edit-emp-pos').innerText=pos;
+
+// prefill demo data
+document.getElementById('emp-first').value=name.split(' ')[0];
+document.getElementById('emp-last').value=name.split(' ')[1]||'';
+document.getElementById('emp-email').value=name.toLowerCase().replace(' ','')+'@gmail.com';
+document.getElementById('emp-phone').value='+91 9876543210';
+document.getElementById('emp-id').value='EMP'+Math.floor(Math.random()*900+100);
+
+}
+function openFileUpload(){
+    document.getElementById('file-uploader').click();
+}
+
+function handleFile(e){
+    const file = e.target.files[0];
+    if(!file) return;
+
+    const name = document.getElementById('chat-user-name').innerText;
+    chatData[name] = chatData[name] || [];
+
+    chatData[name].push({
+        text:"📎 " + file.name,
+        me:true
+    });
+
+    renderChat(name);
+}
+
+function openCamera(){
+    const input=document.createElement('input');
+    input.type='file';
+    input.accept='image/*';
+    input.capture='environment';
+
+    input.onchange=e=>{
+        const file=e.target.files[0];
+        if(!file) return;
+
+        const name=document.getElementById('chat-user-name').innerText;
+        chatData[name]=chatData[name]||[];
+
+        chatData[name].push({
+            text:"📷 Photo",
+            me:true
+        });
+
+        renderChat(name);
+    };
+
+    input.click();
+}
+function openPendingReview(name, img) {
+    // 1. Force the title update immediately
+    document.getElementById('page-title').innerText = "Review Pending";
+    
+    // 2. Set the content
+    document.getElementById('review-emp-name').innerText = name;
+    document.getElementById('review-emp-img').src = `https://i.pravatar.cc/100?img=${img}`;
+    
+    // 3. Switch the view (this will hide the previous 'emp-pending' screen)
+    switchView('pending-review');
+    
+    // 4. Render the merge list
+    const mergeList = document.getElementById('merge-employee-list');
+    mergeList.innerHTML = allEmployees.map(emp => `
+        <div onclick="askConfirmation('Merge with ' + '${emp.name}', 'Approved')" class="bg-white p-4 rounded-[28px] border flex items-center gap-4 shadow-sm active:scale-[0.98] transition-all">
+            <img src="https://i.pravatar.cc/100?img=${emp.img}" class="w-10 h-10 rounded-full">
+            <div class="flex-1">
+                <h4 class="font-bold text-slate-800 text-sm">${emp.name}</h4>
+                <p class="text-[10px] text-slate-400 font-bold uppercase">${emp.pos}</p>
+            </div>
+            <span class="text-[9px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase">Merge</span>
+        </div>
+    `).join('');
+}
+// Function to render Available Shifts list
+function renderAvailableShifts() {
+    const list = document.getElementById('available-shifts-render-list');
+    const shifts = [
+        { name: 'Emp25', img: 'E', color: 'bg-fuchsia-500', time: '8:00a - 4:00p', pos: 'Cashier', date: 'Thu, Feb 26, 2026' },
+        { name: 'Bag21', img: 'B', color: 'bg-indigo-900', time: '8:00a - 4:00p', pos: 'Manager', date: 'Fri, Feb 27, 2026' },
+        { name: 'Bag21', img: 'B', color: 'bg-indigo-800', time: '8:00a - 4:00p', pos: 'Cashier', date: 'Sat, Feb 28, 2026' }
+    ];
+
+    list.innerHTML = shifts.map(s => `
+        <div onclick="openAvailableShiftDetail('${s.name}', '${s.img}', '${s.color}', '${s.time}', '${s.pos}', '${s.date}')" 
+             class="bg-white p-4 rounded-3xl border flex items-center gap-4 shadow-sm active:scale-[0.98] transition-all cursor-pointer">
+            <div class="w-12 h-12 rounded-full ${s.color} text-white flex items-center justify-center font-bold">${s.img}</div>
+            <div class="flex-1">
+                <h4 class="font-bold text-slate-800 text-sm">${s.time}</h4>
+                <p class="text-[10px] text-slate-400 font-bold uppercase italic">${s.pos}</p>
+                <p class="text-[10px] text-slate-400 italic">${s.name}</p>
+            </div>
+            <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
+        </div>
+    `).join('');
+}
+
+function openAvailableShiftDetail(name, img, color, time, pos, date) {
+    document.getElementById('detail-offered-name').innerText = name;
+    document.getElementById('detail-offered-img').innerText = img;
+    document.getElementById('detail-offered-img').className = `w-14 h-14 rounded-full ${color} text-white flex items-center justify-center text-xl font-bold`;
+    document.getElementById('detail-shift-date').innerText = date;
+    document.getElementById('detail-shift-time').innerText = time;
+    document.getElementById('detail-shift-pos').innerText = pos;
+    
+    switchView('available-shift-detail');
+}
+
+function setAvailShiftsTab(tab) {
+    document.getElementById('tab-avail-needing').className = `action-tab-btn ${tab === 'Needing' ? 'active' : 'inactive'}`;
+    document.getElementById('tab-avail-awaiting').className = `action-tab-btn ${tab === 'Awaiting' ? 'active' : 'inactive'}`;
+    if(tab === 'Needing') renderAvailableShifts();
+    else document.getElementById('available-shifts-render-list').innerHTML = '<p class="text-center text-slate-400 py-10">No pending requests</p>';
+}
+function selectLang(el) {
+    document.querySelectorAll('.lang-radio').forEach(r => r.classList.remove('selected'));
+    el.querySelector('.lang-radio').classList.add('selected');
+}
+</script>
+
+</body>
+</html>
