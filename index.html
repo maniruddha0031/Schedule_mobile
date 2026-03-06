@@ -290,6 +290,9 @@ flex-direction:column;
     border-top-right-radius: 40px;
     border-bottom-right-radius: 40px;
     z-index: 20000; /* Moves sidebar in front of bottom nav */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 #sidebar.open{
@@ -680,7 +683,7 @@ overflow:hidden;
 <div id="sidebar" class="flex flex-col">
 <div class="bg-slate-900 text-white px-5 pt-6 pb-4">
     <div class="flex items-center gap-3 mb-3">
-        <img src="https://i.pravatar.cc/100?img=31" 
+        <img src="https://i.pravatar.cc/100?img=53"
              class="w-12 h-12 rounded-full border-2 border-white/40">
 
         <div class="leading-tight">
@@ -697,7 +700,7 @@ overflow:hidden;
 
 </div>
 
-<div class="flex-1 overflow-y-auto px-3 py-4 space-y-5 text-[13px] font-semibold">
+<div class="flex-1 overflow-y-auto px-3 py-4 space-y-5 text-[13px] font-semibold" style="padding-bottom:70px;">
 
 <div>
 
@@ -851,7 +854,7 @@ class="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-100">
 
 	
 
-<div class="border-t border-slate-100 p-3 flex gap-2 bg-white">
+<div style="position:absolute;bottom:0;left:0;right:0;border-top:1px solid #f1f5f9;padding:10px 12px;display:flex;gap:8px;background:white;z-index:10;border-bottom-right-radius:40px;">
     <button onclick="switchView('settings');toggleSidebar()" class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl hover:bg-slate-100 text-[13px] font-semibold text-slate-600">
         <i class="fas fa-cog text-slate-500"></i> Settings
     </button>
