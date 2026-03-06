@@ -1999,7 +1999,7 @@ class="w-24 h-24 rounded-full border-4 border-slate-100 object-cover">
             </div>
             <div>
                 <div style="font-size:16px;font-weight:900;color:white;letter-spacing:-0.3px;">AI Schedule Intelligence</div>
-                <div style="font-size:10.5px;color:rgba(255,255,255,0.5);font-weight:600;">Week of Feb 22 â 28, 2026</div>
+                <div style="font-size:10.5px;color:rgba(255,255,255,0.5);font-weight:600;">Week of Feb 22 - 28, 2026</div>
             </div>
         </div>
     </div>
@@ -2037,7 +2037,7 @@ class="w-24 h-24 rounded-full border-4 border-slate-100 object-cover">
             <div class="ai-insight-icon" style="background:#fff7ed;color:#ea580c;"><i class="fas fa-triangle-exclamation"></i></div>
             <div style="flex:1;">
                 <div style="font-size:13px;font-weight:800;color:#0f172a;line-height:1.2;">Understaffing Alert</div>
-                <div style="font-size:11px;color:#64748b;margin-top:3px;line-height:1.4;">Tue 12PMâ2PM: Cashier gap detected. Consider assigning Luis or Emma.</div>
+                <div style="font-size:11px;color:#64748b;margin-top:3px;line-height:1.4;">Tue 12PM - 2PM: Cashier gap detected. Consider assigning Luis or Emma.</div>
             </div>
             <button style="font-size:10px;font-weight:800;color:#3b82f6;background:#eff6ff;border:none;cursor:pointer;padding:5px 10px;border-radius:8px;white-space:nowrap;">Fix â</button>
         </div>
@@ -2061,7 +2061,7 @@ class="w-24 h-24 rounded-full border-4 border-slate-100 object-cover">
             <div class="ai-insight-icon" style="background:#fdf4ff;color:#9333ea;"><i class="fas fa-lightbulb"></i></div>
             <div style="flex:1;">
                 <div style="font-size:13px;font-weight:800;color:#0f172a;line-height:1.2;">Peak Demand: Wednesday</div>
-                <div style="font-size:11px;color:#64748b;margin-top:3px;line-height:1.4;">AI forecasts 38% higher foot traffic Wed 5PMâ8PM. Consider adding 2 Crew shifts.</div>
+                <div style="font-size:11px;color:#64748b;margin-top:3px;line-height:1.4;">AI forecasts 38% higher foot traffic Wed 5PM - 8PM. Consider adding 2 Crew shifts.</div>
             </div>
         </div>
     </div>
@@ -2075,7 +2075,7 @@ class="w-24 h-24 rounded-full border-4 border-slate-100 object-cover">
                 <span style="display:flex;align-items:center;gap:4px;color:#10b981;"><span style="width:8px;height:8px;background:#10b981;border-radius:2px;display:inline-block;"></span>Scheduled</span>
             </div>
         </div>
-        <div style="font-size:10px;color:#94a3b8;font-weight:600;margin-bottom:10px;">Hours Â· Feb 22â28</div>
+        <div style="font-size:10px;color:#94a3b8;font-weight:600;margin-bottom:10px;">Hours Â· Feb 22 - 28</div>
         <div style="position:relative;height:160px;width:100%;"><canvas id="mgr-staffing-chart"></canvas></div>
     </div>
 
@@ -5834,11 +5834,11 @@ function applySchedFilter(type, value) {
    MY TIME OFF
    ===================================================== */
 const myTimeoffData = [
-    { type: 'All Day',     status: 'Approved', date: 'Feb 14, 2026',                      time: '',                     reason: 'Valentine\'s Day â personal day.' },
-    { type: 'Partial Day', status: 'Pending',  date: 'Feb 28, 2026',                      time: '12:00 PM â 05:00 PM',  reason: 'Doctor appointment in the afternoon.' },
-    { type: 'All Day',     status: 'Declined', date: 'Mar 01 â Mar 02, 2026',              time: '',                     reason: 'Weekend trip, requested in advance.' },
-    { type: 'Partial Day', status: 'Pending',  date: 'Mar 10, 2026',                      time: '08:00 AM â 11:00 AM',  reason: 'Home repair â plumber visit.' },
-    { type: 'All Day',     status: 'Approved', date: 'Mar 17 â Mar 18, 2026',              time: '',                     reason: 'St. Patrick\'s Day holiday.' },
+    { type: 'All Day',     status: 'Approved', date: 'Feb 14, 2026',                      time: '',                     reason: 'Valentine\'s Day - personal day.' },
+    { type: 'Partial Day', status: 'Pending',  date: 'Feb 28, 2026',                      time: '12:00 PM - 05:00 PM',  reason: 'Doctor appointment in the afternoon.' },
+    { type: 'All Day',     status: 'Declined', date: 'Mar 01 - Mar 02, 2026',              time: '',                     reason: 'Weekend trip, requested in advance.' },
+    { type: 'Partial Day', status: 'Pending',  date: 'Mar 10, 2026',                      time: '08:00 AM - 11:00 AM',  reason: 'Home repair - plumber visit.' },
+    { type: 'All Day',     status: 'Approved', date: 'Mar 17 - Mar 18, 2026',              time: '',                     reason: 'St. Patrick\'s Day holiday.' },
 ];
 
 const tofStatusStyle = {
@@ -6506,7 +6506,7 @@ function saveTimeOffRequest() {
     if (type === 'allday') {
         const from = document.getElementById('tof-from-date-display')?.innerText || '';
         const to   = document.getElementById('tof-to-date-display')?.innerText || '';
-        dateStr = from === to ? from : `${from} â ${to}`;
+        dateStr = from === to ? from : `${from} - ${to}`;
         timeStr = 'All Day';
     } else {
         dateStr = document.getElementById('tof-partial-date-display')?.innerText || '';
